@@ -5,7 +5,7 @@ import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductTabs } from "@/components/product/product-tabs";
 import { AddToCartPanel } from "@/components/product/add-to-cart-panel";
 import { ProductCard } from "@/components/product/product-card";
-import { getDetalleProducto, getSlugsActivos } from "@/services/producto.service";
+import { getDetalleProducto, getSlugsActivos } from "@/server/services/producto.service";
 import { formatearMoneda } from "@/lib/utils";
 import { jsonLdHtml } from "@/lib/json-ld";
 import { siteConfig } from "@/config/site";

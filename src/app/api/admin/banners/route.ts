@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { bannerAdminSchema } from "@/validators/admin";
-import { crearBanner, getTodosLosBannersAdmin } from "@/services/banner.service";
-import { registrarAuditoria } from "@/services/log.service";
+import { crearBanner, getTodosLosBannersAdmin } from "@/server/services/banner.service";
+import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function GET() {
   const banners = await getTodosLosBannersAdmin();

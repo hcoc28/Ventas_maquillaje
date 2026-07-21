@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getTodasLasPromocionesAdmin } from "@/services/promocion.service";
+import { getTodasLasPromocionesAdmin } from "@/server/services/promocion.service";
 import { PromocionesTable } from "./promociones-table";
 
 export default async function AdminPromocionesPage() {

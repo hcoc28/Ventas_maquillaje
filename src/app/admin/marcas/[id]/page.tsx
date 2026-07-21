@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getMarcaPorId } from "@/services/marca.service";
+import { getMarcaPorId } from "@/server/services/marca.service";
 import { MarcaForm } from "../marca-form";
 
 export default async function EditarMarcaPage({ params }: { params: Promise<{ id: string }> }) {

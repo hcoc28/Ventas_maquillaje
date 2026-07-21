@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast-provider";
-import type { getTodosLosUsuariosAdmin } from "@/services/usuario.service";
+import type { getTodosLosUsuariosAdmin } from "@/server/services/usuario.service";
 
 type Usuario = Awaited<ReturnType<typeof getTodosLosUsuariosAdmin>>[number];
 

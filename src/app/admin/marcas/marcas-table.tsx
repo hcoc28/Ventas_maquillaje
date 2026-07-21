@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
-import type { getTodasLasMarcasAdmin } from "@/services/marca.service";
+import type { getTodasLasMarcasAdmin } from "@/server/services/marca.service";
 
 type Marca = Awaited<ReturnType<typeof getTodasLasMarcasAdmin>>[number];
 

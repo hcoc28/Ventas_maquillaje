@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Heart, Package, User } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { obtenerPerfil } from "@/services/usuario.service";
-import { getPedidosPorUsuario } from "@/services/pedido.service";
-import { getIdsFavoritos } from "@/services/favorito.service";
+import { obtenerPerfil } from "@/server/services/usuario.service";
+import { getPedidosPorUsuario } from "@/server/services/pedido.service";
+import { getIdsFavoritos } from "@/server/services/favorito.service";
 import { formatearMoneda } from "@/lib/utils";
 
 export default async function CuentaIndexPage() {

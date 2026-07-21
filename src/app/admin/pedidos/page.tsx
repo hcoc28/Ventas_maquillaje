@@ -1,4 +1,4 @@
-import { getTodosLosPedidosAdmin } from "@/services/pedido.service";
+import { getTodosLosPedidosAdmin } from "@/server/services/pedido.service";
 import { PedidosTable } from "./pedidos-table";
 
 export default async function AdminPedidosPage() {

@@ -17,12 +17,13 @@ Catálogo premium de maquillaje y skincare de lujo, construido con Next.js 15 (A
 
 ```
 src/
-├── app/                 rutas (App Router): (site)/, admin/, api/
-├── components/          UI reutilizable, organizada por dominio
-├── repositories/        acceso a datos vía Prisma (un archivo por agregado)
-├── services/            lógica de negocio sobre los repositorios
+├── app/                 rutas (App Router): (site)/, admin/, api/  — frontend + endpoints
+├── components/          UI reutilizable, organizada por dominio     — frontend
+├── server/              código exclusivo de servidor (nunca se importa desde componentes cliente)
+│   ├── repositories/    acceso a datos vía Prisma (un archivo por agregado)
+│   └── services/        lógica de negocio sobre los repositorios
 ├── validators/           esquemas Zod compartidos entre cliente y servidor
-├── lib/                  utilidades (prisma client, auth, rate-limit, json-ld, etc.)
+├── lib/                  utilidades (prisma client, auth, rate-limit, json-ld, cn/formatearMoneda, etc.)
 ├── config/               configuración del sitio
 └── types/                tipos compartidos
 prisma/

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { buscarProductos } from "@/services/producto.service";
+import { buscarProductos } from "@/server/services/producto.service";
 import type { FiltroProducto, OrdenCatalogo } from "@/types/catalogo";
 
 const ORDENES_VALIDOS: OrdenCatalogo[] = [

@@ -8,7 +8,7 @@ import axios from "axios";
 import { Pencil, Search, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
 import { formatearMoneda } from "@/lib/utils";
-import type { getTodosLosProductosAdmin } from "@/services/producto.service";
+import type { getTodosLosProductosAdmin } from "@/server/services/producto.service";
 
 type Producto = Awaited<ReturnType<typeof getTodosLosProductosAdmin>>[number];
 

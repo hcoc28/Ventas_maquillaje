@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registroSchema } from "@/validators/auth";
-import { registrarUsuario } from "@/services/usuario.service";
-import { registrarActividad } from "@/services/log.service";
+import { registrarUsuario } from "@/server/services/usuario.service";
+import { registrarActividad } from "@/server/services/log.service";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);

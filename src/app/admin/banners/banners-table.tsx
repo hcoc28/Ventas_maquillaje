@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
-import type { getTodosLosBannersAdmin } from "@/services/banner.service";
+import type { getTodosLosBannersAdmin } from "@/server/services/banner.service";
 
 type Banner = Awaited<ReturnType<typeof getTodosLosBannersAdmin>>[number];
 

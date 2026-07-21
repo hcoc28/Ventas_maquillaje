@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { alternarFavorito } from "@/services/favorito.service";
+import { alternarFavorito } from "@/server/services/favorito.service";
 
 const alternarSchema = z.object({ productoId: z.number().int().positive() });
 

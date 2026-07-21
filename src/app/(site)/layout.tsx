@@ -5,7 +5,7 @@ import { NavbarThemeProvider } from "@/components/layout/navbar-theme-context";
 import { CartProvider } from "@/components/cart/cart-context";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { FavoritosProvider } from "@/components/favoritos/favoritos-context";
-import { getCategoriasActivas } from "@/services/categoria.service";
+import { getCategoriasActivas } from "@/server/services/categoria.service";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const categorias = await getCategoriasActivas();

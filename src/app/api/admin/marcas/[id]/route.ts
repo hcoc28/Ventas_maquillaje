@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { marcaAdminSchema } from "@/validators/admin";
-import { actualizarMarca, eliminarMarca } from "@/services/marca.service";
-import { registrarAuditoria } from "@/services/log.service";
+import { actualizarMarca, eliminarMarca } from "@/server/services/marca.service";
+import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

@@ -1,6 +1,6 @@
 import { Package } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { getPedidosPorUsuario } from "@/services/pedido.service";
+import { getPedidosPorUsuario } from "@/server/services/pedido.service";
 import { formatearMoneda } from "@/lib/utils";
 
 export default async function CuentaPedidosPage() {

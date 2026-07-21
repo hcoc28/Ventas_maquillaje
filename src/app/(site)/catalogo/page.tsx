@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { CatalogoClient } from "@/components/catalogo/catalogo-client";
-import { getCategoriasActivas } from "@/services/categoria.service";
-import { getMarcasActivas } from "@/services/marca.service";
-import { buscarProductos } from "@/services/producto.service";
+import { getCategoriasActivas } from "@/server/services/categoria.service";
+import { getMarcasActivas } from "@/server/services/marca.service";
+import { buscarProductos } from "@/server/services/producto.service";
 import type { OrdenCatalogo } from "@/types/catalogo";
 
 export const metadata: Metadata = {

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCategoriaPorId } from "@/services/categoria.service";
+import { getCategoriaPorId } from "@/server/services/categoria.service";
 import { CategoriaForm } from "../categoria-form";
 
 export default async function EditarCategoriaPage({ params }: { params: Promise<{ id: string }> }) {

@@ -1,4 +1,4 @@
-import * as dashboardRepo from "@/repositories/dashboard.repository";
+import * as dashboardRepo from "@/server/repositories/dashboard.repository";
 
 export async function getEstadisticasDashboard() {
   const stats = await dashboardRepo.getEstadisticasDashboard();

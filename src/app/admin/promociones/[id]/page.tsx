@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getPromocionPorId } from "@/services/promocion.service";
+import { getPromocionPorId } from "@/server/services/promocion.service";
 import { PromocionForm } from "../promocion-form";
 
 function aFechaLocal(fecha: Date): string {

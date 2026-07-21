@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import * as pedidoRepo from "@/repositories/pedido.repository";
-import * as usuarioRepo from "@/repositories/usuario.repository";
-import { calcularCarrito } from "@/services/carrito.service";
-import { construirEnlaceWhatsApp, construirMensajeWhatsApp } from "@/services/whatsapp.service";
-import { registrarActividad } from "@/services/log.service";
+import * as pedidoRepo from "@/server/repositories/pedido.repository";
+import * as usuarioRepo from "@/server/repositories/usuario.repository";
+import { calcularCarrito } from "@/server/services/carrito.service";
+import { construirEnlaceWhatsApp, construirMensajeWhatsApp } from "@/server/services/whatsapp.service";
+import { registrarActividad } from "@/server/services/log.service";
 import type { CrearPedidoInput, PedidoResumen, Resultado } from "@/types/carrito";
 
 async function obtenerOCrearUsuarioParaPedido(input: CrearPedidoInput, userId: number | null): Promise<number> {

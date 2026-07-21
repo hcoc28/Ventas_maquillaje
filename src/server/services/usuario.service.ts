@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import * as usuarioRepo from "@/repositories/usuario.repository";
+import * as usuarioRepo from "@/server/repositories/usuario.repository";
 import type { Resultado } from "@/types/carrito";
 
 export interface PerfilDto {

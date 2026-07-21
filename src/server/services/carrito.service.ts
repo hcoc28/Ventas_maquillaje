@@ -1,5 +1,5 @@
-import * as productoRepo from "@/repositories/producto.repository";
-import { precioFinal } from "@/services/producto.service";
+import * as productoRepo from "@/server/repositories/producto.repository";
+import { precioFinal } from "@/server/services/producto.service";
 import type { Carrito, CarritoItem, CarritoItemInput } from "@/types/carrito";
 
 const CANTIDAD_MAXIMA = 20;

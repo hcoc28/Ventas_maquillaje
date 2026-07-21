@@ -1,8 +1,8 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { getUsuarioPorEmail } from "@/repositories/usuario.repository";
-import { registrarActividad } from "@/services/log.service";
+import { getUsuarioPorEmail } from "@/server/repositories/usuario.repository";
+import { registrarActividad } from "@/server/services/log.service";
 import { authConfig } from "@/lib/auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

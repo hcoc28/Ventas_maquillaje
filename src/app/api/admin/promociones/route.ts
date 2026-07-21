@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { promocionAdminSchema } from "@/validators/admin";
-import { crearPromocion, getTodasLasPromocionesAdmin } from "@/services/promocion.service";
-import { registrarAuditoria } from "@/services/log.service";
+import { crearPromocion, getTodasLasPromocionesAdmin } from "@/server/services/promocion.service";
+import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function GET() {
   const promociones = await getTodasLasPromocionesAdmin();

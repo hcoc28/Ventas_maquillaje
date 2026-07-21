@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getIdsFavoritos } from "@/services/favorito.service";
+import { getIdsFavoritos } from "@/server/services/favorito.service";
 
 export async function GET() {
   const session = await auth();

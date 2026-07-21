@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { crearPedidoSchema } from "@/validators/pedido";
-import { crearPedido } from "@/services/pedido.service";
+import { crearPedido } from "@/server/services/pedido.service";
 import { auth } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {

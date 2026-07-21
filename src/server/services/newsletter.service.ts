@@ -1,4 +1,4 @@
-import * as newsletterRepo from "@/repositories/newsletter.repository";
+import * as newsletterRepo from "@/server/repositories/newsletter.repository";
 import type { Resultado } from "@/types/carrito";
 
 export async function suscribir(email: string): Promise<Resultado<boolean>> {

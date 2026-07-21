@@ -1,4 +1,4 @@
-import * as bannerRepo from "@/repositories/banner.repository";
+import * as bannerRepo from "@/server/repositories/banner.repository";
 import type { BannerDto } from "@/types/catalogo";
 import type { BannerAdminInput } from "@/validators/admin";
 

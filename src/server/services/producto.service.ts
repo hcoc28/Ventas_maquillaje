@@ -1,6 +1,6 @@
-import * as productoRepo from "@/repositories/producto.repository";
-import * as opinionRepo from "@/repositories/opinion.repository";
-import type { ProductoConRelaciones } from "@/repositories/producto.repository";
+import * as productoRepo from "@/server/repositories/producto.repository";
+import * as opinionRepo from "@/server/repositories/opinion.repository";
+import type { ProductoConRelaciones } from "@/server/repositories/producto.repository";
 import type { FiltroProducto, PagedResult, ProductoDetalle, ProductoResumen } from "@/types/catalogo";
 import type { ProductoAdminInput } from "@/validators/admin";
 

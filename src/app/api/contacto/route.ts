@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { contactoSchema } from "@/validators/contacto";
-import { enviarMensaje } from "@/services/contacto.service";
+import { enviarMensaje } from "@/server/services/contacto.service";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);

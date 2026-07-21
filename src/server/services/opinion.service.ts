@@ -1,5 +1,5 @@
-import * as opinionRepo from "@/repositories/opinion.repository";
-import * as productoRepo from "@/repositories/producto.repository";
+import * as opinionRepo from "@/server/repositories/opinion.repository";
+import * as productoRepo from "@/server/repositories/producto.repository";
 import type { Resultado } from "@/types/carrito";
 
 export async function crearOpinion(

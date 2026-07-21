@@ -30,8 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (never commit secrets; keep the example template)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -41,3 +42,8 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# editor / AI tooling (local only, not part of the app)
+.claude/
+.vscode/
+.idea/

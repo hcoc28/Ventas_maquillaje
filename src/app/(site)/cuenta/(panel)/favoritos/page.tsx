@@ -1,6 +1,6 @@
 import { Heart } from "lucide-react";
 import { auth } from "@/lib/auth";
-import { getFavoritos } from "@/services/favorito.service";
+import { getFavoritos } from "@/server/services/favorito.service";
 import { ProductCard } from "@/components/product/product-card";
 
 export default async function CuentaFavoritosPage() {

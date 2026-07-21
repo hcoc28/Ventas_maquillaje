@@ -5,7 +5,7 @@ import axios from "axios";
 import { useToast } from "@/components/ui/toast-provider";
 import { formatearMoneda } from "@/lib/utils";
 import { ESTADOS_PEDIDO } from "@/validators/admin";
-import type { getTodosLosPedidosAdmin } from "@/services/pedido.service";
+import type { getTodosLosPedidosAdmin } from "@/server/services/pedido.service";
 
 type Pedido = Awaited<ReturnType<typeof getTodosLosPedidosAdmin>>[number];
 

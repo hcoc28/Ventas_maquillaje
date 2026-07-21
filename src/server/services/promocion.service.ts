@@ -1,4 +1,4 @@
-import * as promocionRepo from "@/repositories/promocion.repository";
+import * as promocionRepo from "@/server/repositories/promocion.repository";
 import type { PromocionAdminInput } from "@/validators/admin";
 
 export async function getTodasLasPromocionesAdmin() {

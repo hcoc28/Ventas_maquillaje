@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
-import type { getTodasLasPromocionesAdmin } from "@/services/promocion.service";
+import type { getTodasLasPromocionesAdmin } from "@/server/services/promocion.service";
 
 type Promocion = Awaited<ReturnType<typeof getTodasLasPromocionesAdmin>>[number];
 

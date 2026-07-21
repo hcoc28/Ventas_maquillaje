@@ -7,10 +7,10 @@ import { CategoryCard } from "@/components/home/category-card";
 import { ProductCard } from "@/components/product/product-card";
 import { NewsletterForm } from "@/components/layout/newsletter-form";
 import { Reveal } from "@/components/ui/reveal";
-import { getBannersActivos } from "@/services/banner.service";
-import { getCategoriasActivas } from "@/services/categoria.service";
-import { getMarcasActivas } from "@/services/marca.service";
-import * as productoService from "@/services/producto.service";
+import { getBannersActivos } from "@/server/services/banner.service";
+import { getCategoriasActivas } from "@/server/services/categoria.service";
+import { getMarcasActivas } from "@/server/services/marca.service";
+import * as productoService from "@/server/services/producto.service";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },

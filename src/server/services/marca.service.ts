@@ -1,4 +1,4 @@
-import * as marcaRepo from "@/repositories/marca.repository";
+import * as marcaRepo from "@/server/repositories/marca.repository";
 import type { MarcaDto } from "@/types/catalogo";
 import type { MarcaAdminInput } from "@/validators/admin";
 

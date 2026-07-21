@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { obtenerPerfil } from "@/services/usuario.service";
+import { obtenerPerfil } from "@/server/services/usuario.service";
 import { PerfilForm } from "./perfil-form";
 
 export default async function CuentaPerfilPage() {

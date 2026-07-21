@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { promocionAdminSchema } from "@/validators/admin";
-import { actualizarPromocion, eliminarPromocion } from "@/services/promocion.service";
-import { registrarAuditoria } from "@/services/log.service";
+import { actualizarPromocion, eliminarPromocion } from "@/server/services/promocion.service";
+import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

@@ -1,4 +1,4 @@
-import * as logRepo from "@/repositories/log.repository";
+import * as logRepo from "@/server/repositories/log.repository";
 
 export async function registrarActividad(userId: number | null, accion: string, detalle?: string) {
   try {

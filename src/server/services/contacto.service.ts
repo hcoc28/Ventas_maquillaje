@@ -1,4 +1,4 @@
-import * as contactoRepo from "@/repositories/contacto.repository";
+import * as contactoRepo from "@/server/repositories/contacto.repository";
 import type { Resultado } from "@/types/carrito";
 
 export async function enviarMensaje(

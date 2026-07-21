@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast-provider";
 import { perfilSchema, type PerfilInput } from "@/validators/auth";
-import type { PerfilDto } from "@/services/usuario.service";
+import type { PerfilDto } from "@/server/services/usuario.service";
 
 export function PerfilForm({ perfil }: { perfil: PerfilDto }) {
   const { mostrar } = useToast();

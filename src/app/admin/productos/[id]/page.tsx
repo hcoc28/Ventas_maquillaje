@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { getProductoPorIdAdmin } from "@/services/producto.service";
-import { getTodasLasCategoriasAdmin } from "@/services/categoria.service";
-import { getTodasLasMarcasAdmin } from "@/services/marca.service";
-import { getTodasLasPromocionesAdmin } from "@/services/promocion.service";
+import { getProductoPorIdAdmin } from "@/server/services/producto.service";
+import { getTodasLasCategoriasAdmin } from "@/server/services/categoria.service";
+import { getTodasLasMarcasAdmin } from "@/server/services/marca.service";
+import { getTodasLasPromocionesAdmin } from "@/server/services/promocion.service";
 import { ProductoForm } from "../producto-form";
 
 export default async function EditarProductoPage({ params }: { params: Promise<{ id: string }> }) {

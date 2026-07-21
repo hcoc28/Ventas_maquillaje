@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { marcaAdminSchema } from "@/validators/admin";
-import { crearMarca, getTodasLasMarcasAdmin } from "@/services/marca.service";
-import { registrarAuditoria } from "@/services/log.service";
+import { crearMarca, getTodasLasMarcasAdmin } from "@/server/services/marca.service";
+import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function GET() {
   const marcas = await getTodasLasMarcasAdmin();

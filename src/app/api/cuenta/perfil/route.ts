@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { perfilSchema } from "@/validators/auth";
-import { actualizarPerfil, obtenerPerfil } from "@/services/usuario.service";
+import { actualizarPerfil, obtenerPerfil } from "@/server/services/usuario.service";
 
 export async function GET() {
   const session = await auth();

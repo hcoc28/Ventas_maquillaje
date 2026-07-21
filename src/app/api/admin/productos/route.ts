@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { productoAdminSchema } from "@/validators/admin";
-import { crearProductoAdmin, getTodosLosProductosAdmin } from "@/services/producto.service";
-import { registrarAuditoria } from "@/services/log.service";
+import { crearProductoAdmin, getTodosLosProductosAdmin } from "@/server/services/producto.service";
+import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function GET() {
   const productos = await getTodosLosProductosAdmin();

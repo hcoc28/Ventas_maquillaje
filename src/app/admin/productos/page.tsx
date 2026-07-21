@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getTodosLosProductosAdmin } from "@/services/producto.service";
+import { getTodosLosProductosAdmin } from "@/server/services/producto.service";
 import { ProductosTable } from "./productos-table";
 
 export default async function AdminProductosPage() {

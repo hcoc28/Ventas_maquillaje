@@ -1,4 +1,4 @@
-import { getTodosLosUsuariosAdmin } from "@/services/usuario.service";
+import { getTodosLosUsuariosAdmin } from "@/server/services/usuario.service";
 import { UsuariosTable } from "./usuarios-table";
 
 export default async function AdminUsuariosPage() {

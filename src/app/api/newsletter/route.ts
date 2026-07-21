@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { newsletterSchema } from "@/validators/contacto";
-import { suscribir } from "@/services/newsletter.service";
+import { suscribir } from "@/server/services/newsletter.service";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);

@@ -1,4 +1,4 @@
-import * as categoriaRepo from "@/repositories/categoria.repository";
+import * as categoriaRepo from "@/server/repositories/categoria.repository";
 import type { CategoriaDto } from "@/types/catalogo";
 import type { CategoriaAdminInput } from "@/validators/admin";
 

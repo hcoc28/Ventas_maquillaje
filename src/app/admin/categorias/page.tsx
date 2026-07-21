@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getTodasLasCategoriasAdmin } from "@/services/categoria.service";
+import { getTodasLasCategoriasAdmin } from "@/server/services/categoria.service";
 import { CategoriasTable } from "./categorias-table";
 
 export default async function AdminCategoriasPage() {

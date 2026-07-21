@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle, ClipboardList, DollarSign, Package, Users } from "lucide-react";
-import { getEstadisticasDashboard } from "@/services/dashboard.service";
+import { getEstadisticasDashboard } from "@/server/services/dashboard.service";
 import { formatearMoneda } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {

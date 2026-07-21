@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getTodosLosBannersAdmin } from "@/services/banner.service";
+import { getTodosLosBannersAdmin } from "@/server/services/banner.service";
 import { BannersTable } from "./banners-table";
 
 export default async function AdminBannersPage() {

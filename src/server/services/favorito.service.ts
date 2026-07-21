@@ -1,6 +1,6 @@
-import * as favoritoRepo from "@/repositories/favorito.repository";
-import * as productoRepo from "@/repositories/producto.repository";
-import * as opinionRepo from "@/repositories/opinion.repository";
+import * as favoritoRepo from "@/server/repositories/favorito.repository";
+import * as productoRepo from "@/server/repositories/producto.repository";
+import * as opinionRepo from "@/server/repositories/opinion.repository";
 import type { ProductoResumen } from "@/types/catalogo";
 
 export async function getFavoritos(userId: number): Promise<ProductoResumen[]> {

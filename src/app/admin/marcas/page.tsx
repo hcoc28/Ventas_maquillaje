@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getTodasLasMarcasAdmin } from "@/services/marca.service";
+import { getTodasLasMarcasAdmin } from "@/server/services/marca.service";
 import { MarcasTable } from "./marcas-table";
 
 export default async function AdminMarcasPage() {

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { productoAdminSchema } from "@/validators/admin";
-import { actualizarProductoAdmin, eliminarProductoAdmin, getProductoPorIdAdmin } from "@/services/producto.service";
-import { registrarAuditoria } from "@/services/log.service";
+import { actualizarProductoAdmin, eliminarProductoAdmin, getProductoPorIdAdmin } from "@/server/services/producto.service";
+import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

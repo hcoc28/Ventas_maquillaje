@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { calcularCarrito } from "@/services/carrito.service";
+import { calcularCarrito } from "@/server/services/carrito.service";
 import { carritoItemInputSchema } from "@/validators/pedido";
 
 const bodySchema = z.object({ items: z.array(carritoItemInputSchema) });

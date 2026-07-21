@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getBannerPorId } from "@/services/banner.service";
+import { getBannerPorId } from "@/server/services/banner.service";
 import { BannerForm } from "../banner-form";
 
 export default async function EditarBannerPage({ params }: { params: Promise<{ id: string }> }) {
