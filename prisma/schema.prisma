@@ -1,0 +1,311 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @unique @db.NVarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  nombre       String    @db.NVarChar(100)
+  apellido     String    @db.NVarChar(100)
+  email        String    @unique @db.NVarChar(200)
+  passwordHash String    @map("password_hash") @db.NVarChar(255)
+  telefono     String?   @db.NVarChar(30)
+  direccion    String?   @db.NVarChar(300)
+  roleId       Int       @map("role_id")
+  activo       Boolean   @default(true)
+  deletedAt    DateTime? @map("deleted_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  role         Role          @relation(fields: [roleId], references: [id])
+  orders       Order[]
+  reviews      Review[]
+  favorites    Favorite[]
+  cart         Cart?
+  activityLogs ActivityLog[]
+  auditLogs    AuditLog[]
+
+  @@index([roleId])
+  @@map("users")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  nombre      String    @db.NVarChar(100)
+  slug        String    @unique @db.NVarChar(120)
+  descripcion String?   @db.NVarChar(500)
+  imagenUrl   String?   @map("imagen_url") @db.NVarChar(500)
+  icono       String?   @db.NVarChar(60)
+  orden       Int       @default(0)
+  activo      Boolean   @default(true)
+  deletedAt   DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Brand {
+  id          Int       @id @default(autoincrement())
+  nombre      String    @db.NVarChar(100)
+  slug        String    @unique @db.NVarChar(120)
+  descripcion String?   @db.NVarChar(500)
+  logoUrl     String?   @map("logo_url") @db.NVarChar(500)
+  activo      Boolean   @default(true)
+  deletedAt   DateTime? @map("deleted_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@map("brands")
+}
+
+model Promotion {
+  id                  Int       @id @default(autoincrement())
+  nombre              String    @db.NVarChar(120)
+  descripcion         String?   @db.NVarChar(500)
+  porcentajeDescuento Decimal   @map("porcentaje_descuento") @db.Decimal(5, 2)
+  fechaInicio         DateTime  @map("fecha_inicio")
+  fechaFin            DateTime  @map("fecha_fin")
+  activo              Boolean   @default(true)
+  deletedAt           DateTime? @map("deleted_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  products Product[]
+
+  @@map("promotions")
+}
+
+model Product {
+  id                Int       @id @default(autoincrement())
+  nombre            String    @db.NVarChar(150)
+  slug              String    @unique @db.NVarChar(180)
+  descripcionCorta  String    @map("descripcion_corta") @db.NVarChar(300)
+  descripcionLarga  String    @map("descripcion_larga") @db.NVarChar(Max)
+  ingredientes      String?   @db.NVarChar(Max)
+  modoUso           String?   @map("modo_uso") @db.NVarChar(Max)
+  beneficios        String?   @db.NVarChar(Max)
+  precio            Decimal   @db.Decimal(10, 2)
+  esNuevo           Boolean   @default(false) @map("es_nuevo")
+  esEdicionLimitada Boolean   @default(false) @map("es_edicion_limitada")
+  activo            Boolean   @default(true)
+  categoryId        Int       @map("category_id")
+  brandId           Int       @map("brand_id")
+  promotionId       Int?      @map("promotion_id")
+  deletedAt         DateTime? @map("deleted_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  category     Category       @relation(fields: [categoryId], references: [id])
+  brand        Brand          @relation(fields: [brandId], references: [id])
+  promotion    Promotion?     @relation(fields: [promotionId], references: [id])
+  images       ProductImage[]
+  inventory    Inventory?
+  orderDetails OrderDetail[]
+  reviews      Review[]
+  favorites    Favorite[]
+  cartItems    CartItem[]
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([slug])
+  @@map("products")
+}
+
+model ProductImage {
+  id          Int     @id @default(autoincrement())
+  productId   Int     @map("product_id")
+  url         String  @db.NVarChar(500)
+  textoAlt    String  @map("texto_alt") @db.NVarChar(200)
+  orden       Int     @default(0)
+  esPrincipal Boolean @default(false) @map("es_principal")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model Inventory {
+  id          Int      @id @default(autoincrement())
+  productId   Int      @unique @map("product_id")
+  stock       Int      @default(0)
+  stockMinimo Int      @default(5) @map("stock_minimo")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("inventory")
+}
+
+model Order {
+  id               Int      @id @default(autoincrement())
+  numeroPedido     String   @unique @map("numero_pedido") @db.NVarChar(30)
+  userId           Int      @map("user_id")
+  estado           String   @default("Pendiente") @db.NVarChar(20)
+  subtotal         Decimal  @db.Decimal(10, 2)
+  total            Decimal  @db.Decimal(10, 2)
+  nombreContacto   String   @map("nombre_contacto") @db.NVarChar(150)
+  telefonoContacto String   @map("telefono_contacto") @db.NVarChar(30)
+  direccionEntrega String   @map("direccion_entrega") @db.NVarChar(400)
+  observaciones    String?  @db.NVarChar(1000)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user    User          @relation(fields: [userId], references: [id])
+  details OrderDetail[]
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderDetail {
+  id             Int     @id @default(autoincrement())
+  orderId        Int     @map("order_id")
+  productId      Int     @map("product_id")
+  nombreProducto String  @map("nombre_producto") @db.NVarChar(150)
+  cantidad       Int
+  precioUnitario Decimal @map("precio_unitario") @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_details")
+}
+
+model Cart {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @unique @map("user_id")
+  sessionId String?  @unique @map("session_id") @db.NVarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User?      @relation(fields: [userId], references: [id])
+  items CartItem[]
+
+  @@map("cart")
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int      @map("cart_id")
+  productId Int      @map("product_id")
+  cantidad  Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
+}
+
+model Review {
+  id           Int      @id @default(autoincrement())
+  productId    Int      @map("product_id")
+  userId       Int      @map("user_id")
+  calificacion Int
+  comentario   String   @db.NVarChar(1000)
+  aprobada     Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([productId, aprobada])
+  @@map("reviews")
+}
+
+model Favorite {
+  userId    Int      @map("user_id")
+  productId Int      @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([userId, productId])
+  @@map("favorites")
+}
+
+model Banner {
+  id                  Int       @id @default(autoincrement())
+  titulo              String    @db.NVarChar(150)
+  subtitulo           String?   @db.NVarChar(300)
+  imagenUrl           String    @map("imagen_url") @db.NVarChar(500)
+  textoBotonPrimario  String?   @map("texto_boton_primario") @db.NVarChar(60)
+  urlBotonPrimario    String?   @map("url_boton_primario") @db.NVarChar(300)
+  orden               Int       @default(0)
+  activo              Boolean   @default(true)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@map("banners")
+}
+
+model NewsletterSubscriber {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique @db.NVarChar(200)
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("newsletter_subscribers")
+}
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @db.NVarChar(150)
+  email     String   @db.NVarChar(200)
+  asunto    String   @db.NVarChar(200)
+  mensaje   String   @db.NVarChar(2000)
+  leido     Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("contact_messages")
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  accion    String   @db.NVarChar(200)
+  detalle   String?  @db.NVarChar(1000)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
+model AuditLog {
+  id             Int      @id @default(autoincrement())
+  entidad        String   @db.NVarChar(100)
+  entidadId      Int      @map("entidad_id")
+  accion         String   @db.NVarChar(20)
+  valoresPrevios String?  @map("valores_previos") @db.NVarChar(Max)
+  valoresNuevos  String?  @map("valores_nuevos") @db.NVarChar(Max)
+  userId         Int?     @map("user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}

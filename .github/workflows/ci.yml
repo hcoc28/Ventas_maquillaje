@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Eclat_Ci_2026!Secure"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd="/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Eclat_Ci_2026!Secure' -Q 'SELECT 1'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DATABASE_URL: "sqlserver://localhost:1433;database=master;user=sa;password=Eclat_Ci_2026!Secure;trustServerCertificate=true;"
+      DB_SERVER: localhost
+      DB_PORT: 1433
+      DB_NAME: master
+      DB_USER: sa
+      DB_PASSWORD: "Eclat_Ci_2026!Secure"
+      NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+      NEXT_PUBLIC_WHATSAPP_NUMBER: "50200000000"
+      AUTH_SECRET: "ci-only-secret-not-for-production"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Verificación de tipos
+        run: npx tsc --noEmit
+
+      - name: Aplicar migraciones de Prisma
+        run: npx prisma migrate deploy
+
+      - name: Sembrar datos de prueba
+        run: npm run db:seed
+
+      - name: Compilar la aplicación
+        run: npm run build
