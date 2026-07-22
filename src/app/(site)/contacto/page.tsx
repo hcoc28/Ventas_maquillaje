@@ -49,8 +49,8 @@ export default function ContactoPage() {
             <div>
               <h2 className="font-semibold">Correo electrónico</h2>
               <p className="text-sm text-text-muted">Para consultas generales y alianzas comerciales.</p>
-              <a href="mailto:hola@eclatmaquillaje.com" className="mt-1 inline-block text-sm font-medium text-accent-strong hover:underline">
-                hola@eclatmaquillaje.com
+              <a href="mailto:hola@amourbloom.com" className="mt-1 inline-block text-sm font-medium text-accent-strong hover:underline">
+                hola@amourbloom.com
               </a>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function ContactoPage() {
 
           <div className="overflow-hidden rounded-2xl border border-border">
             <iframe
-              title="Ubicación de Èclat Maquillaje en el mapa"
+              title="Ubicación de Amour Bloom Maquillaje en el mapa"
               src="https://www.google.com/maps?q=Zona+10,+Ciudad+de+Guatemala&output=embed"
               width="100%"
               height="260"

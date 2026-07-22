@@ -38,6 +38,27 @@ export const promocionAdminSchema = z
 
 export type PromocionAdminInput = z.infer<typeof promocionAdminSchema>;
 
+export const cuponAdminSchema = z
+  .object({
+    codigo: z
+      .string()
+      .trim()
+      .min(3, "Mínimo 3 caracteres.")
+      .max(30)
+      .regex(/^[A-Za-z0-9-]+$/, "Solo letras, números y guiones."),
+    porcentajeDescuento: z.number().min(1).max(90),
+    fechaInicio: z.string().min(1, "Selecciona una fecha de inicio."),
+    fechaFin: z.string().min(1, "Selecciona una fecha de fin."),
+    usoMaximo: z.number().int().positive().nullable().optional(),
+    activo: z.boolean(),
+  })
+  .refine((data) => new Date(data.fechaFin) > new Date(data.fechaInicio), {
+    message: "La fecha de fin debe ser posterior a la fecha de inicio.",
+    path: ["fechaFin"],
+  });
+
+export type CuponAdminInput = z.infer<typeof cuponAdminSchema>;
+
 export const bannerAdminSchema = z.object({
   titulo: z.string().trim().min(2).max(150),
   subtitulo: z.string().trim().max(300).optional().or(z.literal("")),

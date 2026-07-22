@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { obtenerPerfil } from "@/server/services/usuario.service";
 import { PerfilForm } from "./perfil-form";
+import { CambiarPasswordForm } from "./cambiar-password-form";
 
 export default async function CuentaPerfilPage() {
   const session = await auth();
@@ -17,6 +18,11 @@ export default async function CuentaPerfilPage() {
 
       <div className="max-w-xl rounded-2xl bg-surface p-6 shadow-[var(--shadow-soft)]">
         <PerfilForm perfil={perfil} />
+      </div>
+
+      <div className="max-w-xl rounded-2xl bg-surface p-6 shadow-[var(--shadow-soft)]">
+        <h2 className="mb-4 font-[family-name:var(--font-display)] text-xl">Cambiar contraseña</h2>
+        <CambiarPasswordForm />
       </div>
     </div>
   );

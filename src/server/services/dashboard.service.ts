@@ -14,3 +14,29 @@ export async function getEstadisticasDashboard() {
     })),
   };
 }
+
+export async function getReportesVentas(dias: number) {
+  const fechaInicio = new Date();
+  fechaInicio.setDate(fechaInicio.getDate() - dias);
+  fechaInicio.setHours(0, 0, 0, 0);
+
+  const reporte = await dashboardRepo.getReportesVentas(fechaInicio);
+
+  return {
+    ventasPorDia: reporte.ventasPorDia.map((v) => ({
+      fecha: v.fecha.toISOString().slice(0, 10),
+      total: Number(v.total),
+    })),
+    ventasPorCategoria: reporte.ventasPorCategoria.map((v) => ({
+      categoria: v.categoria,
+      total: Number(v.total),
+    })),
+    topProductos: reporte.topProductos.map((p) => ({
+      productId: p.productId,
+      nombre: p.nombre,
+      slug: p.slug,
+      unidadesVendidas: Number(p.unidadesVendidas),
+      ingresos: Number(p.ingresos),
+    })),
+  };
+}

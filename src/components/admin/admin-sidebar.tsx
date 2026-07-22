@@ -8,6 +8,7 @@ import {
   FolderTree,
   Tag,
   Percent,
+  TicketPercent,
   Image as ImageIcon,
   Users,
   ClipboardList,
@@ -21,25 +22,27 @@ const links = [
   { href: "/admin/categorias", label: "Categorías", icon: FolderTree },
   { href: "/admin/marcas", label: "Marcas", icon: Tag },
   { href: "/admin/promociones", label: "Promociones", icon: Percent },
+  { href: "/admin/cupones", label: "Cupones", icon: TicketPercent },
   { href: "/admin/banners", label: "Banners", icon: ImageIcon },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
-  { href: "/admin/usuarios", label: "Usuarios", icon: Users },
+  { href: "/admin/usuarios", label: "Usuarios", icon: Users, soloAdmin: true },
 ];
 
 export function AdminSidebar({ rol }: { rol: string }) {
   const pathname = usePathname();
+  const linksVisibles = links.filter((link) => !link.soloAdmin || rol === "Administrador");
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border bg-surface lg:flex">
       <div className="flex items-center gap-2 border-b border-border px-6 py-5">
-        <span className="font-[family-name:var(--font-display)] text-xl">Èclat</span>
+        <span className="font-[family-name:var(--font-display)] text-xl">Amour Bloom</span>
         <span className="rounded-full bg-accent-strong/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-accent-strong">
           {rol}
         </span>
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-5">
-        {links.map((link) => {
+        {linksVisibles.map((link) => {
           const activo = link.exact ? pathname === link.href : pathname.startsWith(link.href);
           return (
             <Link

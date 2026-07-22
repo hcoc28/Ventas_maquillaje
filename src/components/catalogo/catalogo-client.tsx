@@ -33,6 +33,11 @@ interface Props {
   };
 }
 
+/** Identifica una combinación de filtros de búsqueda (todo menos la página). */
+function claveBusqueda(f: { q: string; categorias: string[]; marcas: string[]; oferta: boolean; stock: boolean; orden: OrdenCatalogo }): string {
+  return JSON.stringify([f.q, f.categorias, f.marcas, f.oferta, f.stock, f.orden]);
+}
+
 export function CatalogoClient({ categorias, marcas, resultadoInicial, filtroInicial }: Props) {
   const router = useRouter();
 
@@ -48,7 +53,30 @@ export function CatalogoClient({ categorias, marcas, resultadoInicial, filtroIni
   const [pagina, setPagina] = useState(filtroInicial.pagina);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const primerRender = useRef(true);
+
+  // Combinación de filtros que ya coincide con lo que hay en `resultado` — sirve para saber si
+  // el efecto de búsqueda debe disparar una petición o si ya está al día (evita una petición
+  // duplicada justo después de resincronizar por una navegación externa, ver abajo).
+  const [busquedaAplicada, setBusquedaAplicada] = useState(() => claveBusqueda(filtroInicial));
+
+  // Al navegar entre links (ej. categorías del navbar) el componente no se desmonta, así que
+  // hay que resincronizar el estado interno con los nuevos props del servidor cada vez que
+  // cambian. Se ajusta durante el render mismo (patrón que recomienda React para esto) en vez
+  // de en un useEffect, para no disparar un ciclo extra de renders.
+  const [filtroAplicado, setFiltroAplicado] = useState(() => JSON.stringify(filtroInicial));
+  const claveActual = JSON.stringify(filtroInicial);
+  if (claveActual !== filtroAplicado) {
+    setFiltroAplicado(claveActual);
+    setBusquedaAplicada(claveBusqueda(filtroInicial));
+    setResultado(resultadoInicial);
+    setQ(filtroInicial.q);
+    setCategoriasSel(filtroInicial.categorias);
+    setMarcasSel(filtroInicial.marcas);
+    setOferta(filtroInicial.oferta);
+    setStock(filtroInicial.stock);
+    setOrden(filtroInicial.orden);
+    setPagina(filtroInicial.pagina);
+  }
 
   const buscar = useCallback(
     async (paginaObjetivo: number) => {
@@ -66,6 +94,7 @@ export function CatalogoClient({ categorias, marcas, resultadoInicial, filtroIni
         const { data } = await axios.get<PagedResult<ProductoResumen>>(`/api/productos/buscar?${params.toString()}`);
         setResultado(data);
         setPagina(paginaObjetivo);
+        setBusquedaAplicada(claveBusqueda({ q, categorias: categoriasSel, marcas: marcasSel, oferta, stock, orden }));
         router.replace(`/catalogo?${params.toString()}`, { scroll: false });
       } finally {
         setCargando(false);
@@ -75,10 +104,9 @@ export function CatalogoClient({ categorias, marcas, resultadoInicial, filtroIni
   );
 
   useEffect(() => {
-    if (primerRender.current) {
-      primerRender.current = false;
-      return;
-    }
+    const claveActualBusqueda = claveBusqueda({ q, categorias: categoriasSel, marcas: marcasSel, oferta, stock, orden });
+    if (claveActualBusqueda === busquedaAplicada) return;
+
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => buscar(1), 350);
     return () => {

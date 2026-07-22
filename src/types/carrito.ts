@@ -18,8 +18,12 @@ export interface CarritoItem {
 export interface Carrito {
   items: CarritoItem[];
   subtotal: number;
+  descuento: number;
   total: number;
   cantidadTotalItems: number;
+  codigoCupon?: string;
+  cuponId?: number;
+  cuponError?: string;
 }
 
 export interface CrearPedidoInput {
@@ -29,6 +33,7 @@ export interface CrearPedidoInput {
   observaciones?: string;
   email?: string;
   items: CarritoItemInput[];
+  codigoCupon?: string;
 }
 
 export interface PedidoDetalleDto {
@@ -44,6 +49,8 @@ export interface PedidoResumen {
   fechaPedido: string;
   estado: string;
   subtotal: number;
+  descuento: number;
+  cuponCodigo?: string | null;
   total: number;
   nombreContacto: string;
   telefonoContacto: string;

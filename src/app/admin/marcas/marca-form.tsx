@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast-provider";
+import { ImagenInput } from "@/components/admin/imagen-input";
 import { marcaAdminSchema, type MarcaAdminInput } from "@/validators/admin";
 import { slugify } from "@/lib/utils";
 
@@ -67,8 +68,8 @@ export function MarcaForm({ marcaId, valoresIniciales }: { marcaId?: number; val
         <textarea {...register("descripcion")} rows={3} className={inputClass} />
       </Campo>
 
-      <Campo label="URL del logo" error={errors.logoUrl?.message}>
-        <input {...register("logoUrl")} className={inputClass} />
+      <Campo label="Logo" error={errors.logoUrl?.message}>
+        <ImagenInput value={watch("logoUrl") ?? ""} onChange={(url) => setValue("logoUrl", url, { shouldValidate: true })} />
       </Campo>
 
       <label className="flex items-center gap-2.5 text-sm font-semibold">

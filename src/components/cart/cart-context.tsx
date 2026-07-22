@@ -21,6 +21,8 @@ interface CartContextValue {
   eliminar: (productoId: number) => Promise<void>;
   vaciar: () => Promise<void>;
   vaciarSilencioso: () => void;
+  aplicarCupon: (codigo: string) => Promise<void>;
+  quitarCupon: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -49,11 +51,12 @@ function guardarItemsLocales(items: CarritoItemInput[]) {
   }
 }
 
-const carritoVacio: Carrito = { items: [], subtotal: 0, total: 0, cantidadTotalItems: 0 };
+const carritoVacio: Carrito = { items: [], subtotal: 0, descuento: 0, total: 0, cantidadTotalItems: 0 };
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CarritoItemInput[]>([]);
   const [carrito, setCarrito] = useState<Carrito>(carritoVacio);
+  const [codigoCupon, setCodigoCupon] = useState<string>("");
   const [cargando, setCargando] = useState(false);
   const [drawerAbierto, setDrawerAbierto] = useState(false);
   const [checkoutAbierto, setCheckoutAbierto] = useState(false);
@@ -68,10 +71,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setHidratado(true);
   }, []);
 
-  const recalcular = useCallback(async (nuevosItems: CarritoItemInput[]) => {
+  const recalcular = useCallback(async (nuevosItems: CarritoItemInput[], cupon?: string) => {
     setCargando(true);
     try {
-      const { data } = await axios.post<Carrito>("/api/carrito/calcular", { items: nuevosItems });
+      const { data } = await axios.post<Carrito>("/api/carrito/calcular", {
+        items: nuevosItems,
+        codigoCupon: cupon,
+      });
       setCarrito(data);
 
       const idsValidos = new Set(data.items.map((i) => i.productoId));
@@ -95,10 +101,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async (nuevos: CarritoItemInput[]) => {
       setItems(nuevos);
       guardarItemsLocales(nuevos);
-      await recalcular(nuevos);
+      await recalcular(nuevos, codigoCupon || undefined);
     },
-    [recalcular]
+    [recalcular, codigoCupon]
   );
+
+  const aplicarCupon = useCallback(
+    async (codigo: string) => {
+      setCodigoCupon(codigo);
+      await recalcular(items, codigo);
+    },
+    [recalcular, items]
+  );
+
+  const quitarCupon = useCallback(async () => {
+    setCodigoCupon("");
+    await recalcular(items, undefined);
+  }, [recalcular, items]);
 
   const agregar = useCallback(
     async (productoId: number, cantidad = 1) => {
@@ -138,6 +157,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const vaciarSilencioso = useCallback(() => {
     setItems([]);
     guardarItemsLocales([]);
+    setCodigoCupon("");
     setCarrito(carritoVacio);
   }, []);
 
@@ -159,8 +179,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       eliminar,
       vaciar,
       vaciarSilencioso,
+      aplicarCupon,
+      quitarCupon,
     }),
-    [carrito, cargando, drawerAbierto, checkoutAbierto, agregar, actualizar, eliminar, vaciar, vaciarSilencioso]
+    [carrito, cargando, drawerAbierto, checkoutAbierto, agregar, actualizar, eliminar, vaciar, vaciarSilencioso, aplicarCupon, quitarCupon]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

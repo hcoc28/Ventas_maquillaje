@@ -132,8 +132,25 @@ export async function getSlugsActivos() {
   return productoRepo.getSlugsActivos();
 }
 
-export async function getTodosLosProductosAdmin() {
-  return productoRepo.getTodosLosProductosAdmin();
+export async function getSlugsYFechasActivos() {
+  return productoRepo.getSlugsYFechasActivos();
+}
+
+export async function getTodosLosProductosAdmin(filtro: {
+  pagina: number;
+  tamanoPagina: number;
+  busqueda?: string;
+}): Promise<PagedResult<ProductoConRelaciones>> {
+  const { pagina, tamanoPagina } = filtro;
+  const { items, total } = await productoRepo.getTodosLosProductosAdmin(filtro);
+
+  return {
+    items,
+    pagina,
+    tamanoPagina,
+    totalRegistros: total,
+    totalPaginas: Math.max(Math.ceil(total / tamanoPagina), 1),
+  };
 }
 
 export async function getProductoPorIdAdmin(id: number) {

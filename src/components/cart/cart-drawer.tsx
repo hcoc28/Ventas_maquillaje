@@ -1,22 +1,46 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingBag, Tag, Trash2, X } from "lucide-react";
 import { useCart } from "@/components/cart/cart-context";
 import { useToast } from "@/components/ui/toast-provider";
 import { formatearMoneda } from "@/lib/utils";
 import { datosContactoSchema, type DatosContactoInput } from "@/validators/pedido";
 
 export function CartDrawer() {
-  const { carrito, drawerAbierto, checkoutAbierto, cerrarDrawer, abrirCheckout, cerrarCheckout, actualizar, eliminar, vaciar, vaciarSilencioso } =
-    useCart();
+  const {
+    carrito,
+    drawerAbierto,
+    checkoutAbierto,
+    cerrarDrawer,
+    abrirCheckout,
+    cerrarCheckout,
+    actualizar,
+    eliminar,
+    vaciar,
+    vaciarSilencioso,
+    aplicarCupon,
+    quitarCupon,
+  } = useCart();
   const { mostrar } = useToast();
+  const [inputCupon, setInputCupon] = useState("");
+  const [aplicandoCupon, setAplicandoCupon] = useState(false);
+
+  async function onAplicarCupon() {
+    if (!inputCupon.trim()) return;
+    setAplicandoCupon(true);
+    try {
+      await aplicarCupon(inputCupon.trim());
+    } finally {
+      setAplicandoCupon(false);
+    }
+  }
 
   useEffect(() => {
     if (!drawerAbierto) return;
@@ -38,7 +62,11 @@ export function CartDrawer() {
 
   async function onSubmit(data: DatosContactoInput) {
     try {
-      const payload = { ...data, items: carrito.items.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad })) };
+      const payload = {
+        ...data,
+        items: carrito.items.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad })),
+        codigoCupon: carrito.codigoCupon,
+      };
       const { data: resultado } = await axios.post("/api/pedidos", payload);
       window.open(resultado.enlaceWhatsApp, "_blank", "noopener");
       mostrar(`Pedido ${resultado.numeroPedido} creado. ¡Completa el envío en WhatsApp!`);
@@ -120,10 +148,45 @@ export function CartDrawer() {
                     </ul>
 
                     <div className="mt-5 flex flex-col gap-2">
+                      {carrito.codigoCupon ? (
+                        <div className="flex items-center justify-between rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                          <span className="flex items-center gap-1.5 font-semibold">
+                            <Tag size={13} /> {carrito.codigoCupon} aplicado
+                          </span>
+                          <button onClick={() => quitarCupon()} className="underline hover:no-underline">
+                            Quitar
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            value={inputCupon}
+                            onChange={(e) => setInputCupon(e.target.value)}
+                            placeholder="Código de cupón"
+                            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:border-accent-strong"
+                          />
+                          <button
+                            type="button"
+                            onClick={onAplicarCupon}
+                            disabled={aplicandoCupon}
+                            className="shrink-0 rounded-lg border border-border px-3 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-surface-muted disabled:opacity-60"
+                          >
+                            Aplicar
+                          </button>
+                        </div>
+                      )}
+                      {carrito.cuponError && <span className="text-xs text-red-600">{carrito.cuponError}</span>}
+
                       <div className="flex justify-between text-sm text-text-muted">
                         <span>Subtotal</span>
                         <span>{formatearMoneda(carrito.subtotal)}</span>
                       </div>
+                      {carrito.descuento > 0 && (
+                        <div className="flex justify-between text-sm text-emerald-600">
+                          <span>Descuento</span>
+                          <span>-{formatearMoneda(carrito.descuento)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-lg font-bold">
                         <span>Total</span>
                         <span>{formatearMoneda(carrito.total)}</span>

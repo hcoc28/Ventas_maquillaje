@@ -1,4 +1,4 @@
-# Èclat Maquillaje
+# Amour Bloom
 
 Catálogo premium de maquillaje y skincare de lujo, construido con Next.js 15 (App Router), React 19, TypeScript, Prisma ORM y SQL Server. Incluye catálogo con filtros en tiempo real, carrito con checkout coordinado por WhatsApp, autenticación de clientes (Auth.js) y un panel administrativo completo con roles.
 
@@ -66,6 +66,8 @@ prisma/
    ```
 
    Esto crea los roles, un usuario administrador (`admin@eclatmaquillaje.com` / `Admin#2026!`) y un catálogo de ejemplo.
+
+   > **Producción:** el seed rechaza correr sin la variable `SEED_ADMIN_PASSWORD` cuando `NODE_ENV=production` — nunca debe quedar en producción un Administrador con la contraseña de demo de este README.
 
 ## Desarrollo
 

@@ -4,8 +4,12 @@ import { productoAdminSchema } from "@/validators/admin";
 import { crearProductoAdmin, getTodosLosProductosAdmin } from "@/server/services/producto.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
-export async function GET() {
-  const productos = await getTodosLosProductosAdmin();
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const pagina = Math.max(Number(searchParams.get("pagina")) || 1, 1);
+  const busqueda = searchParams.get("q")?.trim() || undefined;
+
+  const productos = await getTodosLosProductosAdmin({ pagina, tamanoPagina: 20, busqueda });
   return NextResponse.json(productos);
 }
 

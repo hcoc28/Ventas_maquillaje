@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
-import { getTodosLosProductosAdmin } from "@/server/services/producto.service";
+import { getSlugsYFechasActivos } from "@/server/services/producto.service";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const productos = await getTodosLosProductosAdmin();
+  const productos = await getSlugsYFechasActivos();
 
   const paginasEstaticas: MetadataRoute.Sitemap = [
     { url: siteConfig.url, changeFrequency: "daily", priority: 1 },
@@ -15,14 +15,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteConfig.url}/terminos`, changeFrequency: "yearly", priority: 0.2 },
   ];
 
-  const paginasProductos: MetadataRoute.Sitemap = productos
-    .filter((p) => p.activo)
-    .map((p) => ({
-      url: `${siteConfig.url}/producto/${p.slug}`,
-      lastModified: p.updatedAt,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    }));
+  const paginasProductos: MetadataRoute.Sitemap = productos.map((p) => ({
+    url: `${siteConfig.url}/producto/${p.slug}`,
+    lastModified: p.updatedAt,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
 
   return [...paginasEstaticas, ...paginasProductos];
 }

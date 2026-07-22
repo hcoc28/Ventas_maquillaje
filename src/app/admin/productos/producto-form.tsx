@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Plus, Star, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
+import { ImagenInput } from "@/components/admin/imagen-input";
 import { productoAdminSchema, type ProductoAdminInput } from "@/validators/admin";
 import { slugify } from "@/lib/utils";
 
@@ -206,8 +207,11 @@ export function ProductoForm({
 
         {fields.map((field, index) => (
           <div key={field.id} className="grid grid-cols-1 items-start gap-3 rounded-xl bg-surface-muted p-3 sm:grid-cols-[1fr_1fr_auto_auto]">
-            <Campo label="URL" error={errors.imagenes?.[index]?.url?.message}>
-              <input {...register(`imagenes.${index}.url`)} className={inputClass} />
+            <Campo label="Imagen" error={errors.imagenes?.[index]?.url?.message}>
+              <ImagenInput
+                value={watch(`imagenes.${index}.url`) ?? ""}
+                onChange={(url) => setValue(`imagenes.${index}.url`, url, { shouldValidate: true })}
+              />
             </Campo>
             <Campo label="Texto alternativo" error={errors.imagenes?.[index]?.textoAlt?.message}>
               <input {...register(`imagenes.${index}.textoAlt`)} className={inputClass} />

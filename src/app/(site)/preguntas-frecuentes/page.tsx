@@ -3,7 +3,7 @@ import { FaqAccordion } from "./faq-accordion";
 
 export const metadata: Metadata = {
   title: "Preguntas Frecuentes",
-  description: "Resuelve tus dudas sobre pedidos, envíos, pagos y devoluciones en Èclat Maquillaje.",
+  description: "Resuelve tus dudas sobre pedidos, envíos, pagos y devoluciones en Amour Bloom Maquillaje.",
   alternates: { canonical: "/preguntas-frecuentes" },
 };
 

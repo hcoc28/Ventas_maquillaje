@@ -160,7 +160,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl">
           <Reveal direction="zoom">
             <div className="rounded-3xl bg-gradient-to-br from-brand-pink-makeup to-brand-gold p-10 text-center text-white sm:p-16">
-              <h3 className="mb-2 font-[family-name:var(--font-display)] text-3xl text-white sm:text-4xl">Únete al Club Èclat</h3>
+              <h3 className="mb-2 font-[family-name:var(--font-display)] text-3xl text-white sm:text-4xl">Únete al Club Amour Bloom</h3>
               <p className="mb-8 text-white/85">Sé la primera en enterarte de nuevos lanzamientos y promociones exclusivas.</p>
               <NewsletterForm variant="section" />
             </div>

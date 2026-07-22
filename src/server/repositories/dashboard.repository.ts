@@ -9,6 +9,71 @@ interface ProductoBajoStock {
   slug: string;
 }
 
+interface VentaPorDia {
+  fecha: Date;
+  total: number;
+}
+
+interface VentaPorCategoria {
+  categoria: string;
+  total: number;
+}
+
+interface ProductoTop {
+  productId: number;
+  nombre: string;
+  slug: string;
+  unidadesVendidas: number;
+  ingresos: number;
+}
+
+export async function getVentasPorDia(fechaInicio: Date): Promise<VentaPorDia[]> {
+  return prisma.$queryRaw<VentaPorDia[]>(Prisma.sql`
+    SELECT CAST(created_at AS DATE) AS fecha, SUM(total) AS total
+    FROM orders
+    WHERE estado != 'Cancelado' AND created_at >= ${fechaInicio}
+    GROUP BY CAST(created_at AS DATE)
+    ORDER BY fecha ASC
+  `);
+}
+
+export async function getVentasPorCategoria(fechaInicio: Date): Promise<VentaPorCategoria[]> {
+  return prisma.$queryRaw<VentaPorCategoria[]>(Prisma.sql`
+    SELECT c.nombre AS categoria, SUM(od.precio_unitario * od.cantidad) AS total
+    FROM order_details od
+    INNER JOIN products p ON p.id = od.product_id
+    INNER JOIN categories c ON c.id = p.category_id
+    INNER JOIN orders o ON o.id = od.order_id
+    WHERE o.estado != 'Cancelado' AND o.created_at >= ${fechaInicio}
+    GROUP BY c.nombre
+    ORDER BY total DESC
+  `);
+}
+
+export async function getTopProductos(fechaInicio: Date, limite: number): Promise<ProductoTop[]> {
+  return prisma.$queryRaw<ProductoTop[]>(Prisma.sql`
+    SELECT TOP (${limite}) p.id AS productId, p.nombre, p.slug,
+      SUM(od.cantidad) AS unidadesVendidas,
+      SUM(od.precio_unitario * od.cantidad) AS ingresos
+    FROM order_details od
+    INNER JOIN products p ON p.id = od.product_id
+    INNER JOIN orders o ON o.id = od.order_id
+    WHERE o.estado != 'Cancelado' AND o.created_at >= ${fechaInicio}
+    GROUP BY p.id, p.nombre, p.slug
+    ORDER BY ingresos DESC
+  `);
+}
+
+export async function getReportesVentas(fechaInicio: Date) {
+  const [ventasPorDia, ventasPorCategoria, topProductos] = await Promise.all([
+    getVentasPorDia(fechaInicio),
+    getVentasPorCategoria(fechaInicio),
+    getTopProductos(fechaInicio, 5),
+  ]);
+
+  return { ventasPorDia, ventasPorCategoria, topProductos };
+}
+
 export async function getEstadisticasDashboard() {
   const [totalProductos, totalUsuarios, totalPedidos, ingresos, pedidosRecientes, productosBajoStock] =
     await Promise.all([

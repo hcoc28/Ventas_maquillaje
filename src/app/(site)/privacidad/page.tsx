@@ -3,7 +3,7 @@ import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
   title: "Política de Privacidad",
-  description: "Cómo recopilamos, usamos y protegemos tu información en Èclat Maquillaje.",
+  description: "Cómo recopilamos, usamos y protegemos tu información en Amour Bloom Maquillaje.",
   alternates: { canonical: "/privacidad" },
 };
 

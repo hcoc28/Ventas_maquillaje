@@ -1,12 +1,13 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' https://images.unsplash.com data: blob:",
+  "img-src 'self' https://images.unsplash.com https://res.cloudinary.com https://www.google-analytics.com data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self'",
+  "connect-src 'self' https://www.google-analytics.com https://*.ingest.sentry.io",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -23,11 +24,16 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  allowedDevOrigins: ["pouch-swimwear-freedom.ngrok-free.dev"],
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
       },
     ],
   },
@@ -36,4 +42,14 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Sin SENTRY_AUTH_TOKEN no se suben source maps (los stack traces en producción se ven
+  // minificados) — funciona igual para capturar errores, solo menos legibles hasta que se
+  // configure ese token.
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true,
+  disableLogger: true,
+  telemetry: false,
+});

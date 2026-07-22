@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast-provider";
+import { ImagenInput } from "@/components/admin/imagen-input";
 import { bannerAdminSchema, type BannerAdminInput } from "@/validators/admin";
 
 export function BannerForm({ bannerId, valoresIniciales }: { bannerId?: number; valoresIniciales?: BannerAdminInput }) {
@@ -63,8 +64,8 @@ export function BannerForm({ bannerId, valoresIniciales }: { bannerId?: number; 
         <input {...register("subtitulo")} className={inputClass} />
       </Campo>
 
-      <Campo label="URL de imagen" error={errors.imagenUrl?.message}>
-        <input {...register("imagenUrl")} className={inputClass} />
+      <Campo label="Imagen" error={errors.imagenUrl?.message}>
+        <ImagenInput value={watch("imagenUrl") ?? ""} onChange={(url) => setValue("imagenUrl", url, { shouldValidate: true })} />
       </Campo>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

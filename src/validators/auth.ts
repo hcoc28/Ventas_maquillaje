@@ -7,18 +7,20 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
+const passwordSchema = z
+  .string()
+  .min(8, "La contraseña debe tener al menos 8 caracteres.")
+  .regex(/[A-Z]/, "Debe incluir al menos una mayúscula.")
+  .regex(/[0-9]/, "Debe incluir al menos un número.")
+  .regex(/[^A-Za-z0-9]/, "Debe incluir al menos un símbolo.");
+
 export const registroSchema = z
   .object({
     nombre: z.string().trim().min(2, "El nombre es obligatorio.").max(100),
     apellido: z.string().trim().min(2, "El apellido es obligatorio.").max(100),
     email: z.string().email("Ingresa un correo electrónico válido."),
     telefono: z.string().trim().min(8, "Ingresa un teléfono válido.").max(30),
-    password: z
-      .string()
-      .min(8, "La contraseña debe tener al menos 8 caracteres.")
-      .regex(/[A-Z]/, "Debe incluir al menos una mayúscula.")
-      .regex(/[0-9]/, "Debe incluir al menos un número.")
-      .regex(/[^A-Za-z0-9]/, "Debe incluir al menos un símbolo."),
+    password: passwordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -36,3 +38,35 @@ export const perfilSchema = z.object({
 });
 
 export type PerfilInput = z.infer<typeof perfilSchema>;
+
+export const recuperarPasswordSchema = z.object({
+  email: z.string().email("Ingresa un correo electrónico válido."),
+});
+
+export type RecuperarPasswordInput = z.infer<typeof recuperarPasswordSchema>;
+
+export const restablecerPasswordSchema = z
+  .object({
+    token: z.string().min(1),
+    password: passwordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden.",
+    path: ["confirmPassword"],
+  });
+
+export type RestablecerPasswordInput = z.infer<typeof restablecerPasswordSchema>;
+
+export const cambiarPasswordSchema = z
+  .object({
+    passwordActual: z.string().min(1, "Ingresa tu contraseña actual."),
+    passwordNueva: passwordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.passwordNueva === data.confirmPassword, {
+    message: "Las contraseñas no coinciden.",
+    path: ["confirmPassword"],
+  });
+
+export type CambiarPasswordInput = z.infer<typeof cambiarPasswordSchema>;

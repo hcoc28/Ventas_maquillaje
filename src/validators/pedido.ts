@@ -12,6 +12,7 @@ export const crearPedidoSchema = z.object({
   observaciones: z.string().trim().max(1000).optional().or(z.literal("")),
   email: z.string().email().optional().or(z.literal("")),
   items: z.array(carritoItemInputSchema).min(1, "El carrito está vacío."),
+  codigoCupon: z.string().trim().max(30).optional().or(z.literal("")),
 });
 
 export type CrearPedidoInput = z.infer<typeof crearPedidoSchema>;

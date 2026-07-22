@@ -37,7 +37,15 @@ async function main() {
 
   console.log("Sembrando usuario administrador...");
   const adminEmail = "admin@eclatmaquillaje.com";
-  const passwordHash = await bcrypt.hash("Admin#2026!", 12);
+  // En producción exigimos una contraseña explícita por variable de entorno — nunca queremos
+  // que la contraseña de demo (documentada en el README, visible en el historial de git) termine
+  // siendo la de un Administrador real.
+  if (process.env.NODE_ENV === "production" && !process.env.SEED_ADMIN_PASSWORD) {
+    throw new Error(
+      "SEED_ADMIN_PASSWORD es obligatorio para sembrar datos en producción. No uses la contraseña de demo del README."
+    );
+  }
+  const passwordHash = await bcrypt.hash(process.env.SEED_ADMIN_PASSWORD ?? "Admin#2026!", 12);
   await prisma.user.upsert({
     where: { email: adminEmail },
     update: {},

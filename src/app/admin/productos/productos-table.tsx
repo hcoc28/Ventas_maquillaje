@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -10,21 +10,36 @@ import { useToast } from "@/components/ui/toast-provider";
 import { formatearMoneda } from "@/lib/utils";
 import type { getTodosLosProductosAdmin } from "@/server/services/producto.service";
 
-type Producto = Awaited<ReturnType<typeof getTodosLosProductosAdmin>>[number];
+type Resultado = Awaited<ReturnType<typeof getTodosLosProductosAdmin>>;
 
-export function ProductosTable({ productos }: { productos: Producto[] }) {
+export function ProductosTable({ resultado, busquedaInicial }: { resultado: Resultado; busquedaInicial: string }) {
   const router = useRouter();
   const { mostrar } = useToast();
-  const [termino, setTermino] = useState("");
+  const [termino, setTermino] = useState(busquedaInicial);
   const [eliminando, setEliminando] = useState<number | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const filtrados = useMemo(() => {
-    const q = termino.trim().toLowerCase();
-    if (!q) return productos;
-    return productos.filter(
-      (p) => p.nombre.toLowerCase().includes(q) || p.brand.nombre.toLowerCase().includes(q) || p.category.nombre.toLowerCase().includes(q)
-    );
-  }, [productos, termino]);
+  useEffect(() => {
+    if (termino === busquedaInicial) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (termino.trim()) params.set("q", termino.trim());
+      params.set("pagina", "1");
+      router.push(`/admin/productos?${params.toString()}`);
+    }, 350);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [termino]);
+
+  function irAPagina(p: number) {
+    const params = new URLSearchParams();
+    if (busquedaInicial) params.set("q", busquedaInicial);
+    params.set("pagina", String(p));
+    router.push(`/admin/productos?${params.toString()}`);
+  }
 
   async function eliminar(id: number, nombre: string) {
     if (!confirm(`¿Desactivar el producto "${nombre}"?`)) return;
@@ -42,14 +57,17 @@ export function ProductosTable({ productos }: { productos: Producto[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="relative max-w-sm">
-        <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-        <input
-          value={termino}
-          onChange={(e) => setTermino(e.target.value)}
-          placeholder="Buscar por nombre, marca o categoría..."
-          className="w-full rounded-full border border-border bg-surface py-2.5 pl-11 pr-4 text-sm outline-none focus:border-accent-strong"
-        />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="relative max-w-sm flex-1">
+          <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
+          <input
+            value={termino}
+            onChange={(e) => setTermino(e.target.value)}
+            placeholder="Buscar por nombre, marca o categoría..."
+            className="w-full rounded-full border border-border bg-surface py-2.5 pl-11 pr-4 text-sm outline-none focus:border-accent-strong"
+          />
+        </div>
+        <span className="text-sm text-text-muted">{resultado.totalRegistros} productos</span>
       </div>
 
       <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
@@ -66,7 +84,7 @@ export function ProductosTable({ productos }: { productos: Producto[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {filtrados.map((p) => {
+            {resultado.items.map((p) => {
               const imagen = p.images.find((i) => i.esPrincipal) ?? p.images[0];
               const stock = p.inventory?.stock ?? 0;
               const bajoStock = stock <= (p.inventory?.stockMinimo ?? 5);
@@ -122,8 +140,29 @@ export function ProductosTable({ productos }: { productos: Producto[] }) {
             })}
           </tbody>
         </table>
-        {filtrados.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No se encontraron productos.</p>}
+        {resultado.items.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No se encontraron productos.</p>}
       </div>
+
+      {resultado.totalPaginas > 1 && (
+        <div className="flex justify-center gap-2">
+          {Array.from({ length: resultado.totalPaginas }, (_, i) => i + 1)
+            .filter((p) => Math.abs(p - resultado.pagina) <= 2 || p === 1 || p === resultado.totalPaginas)
+            .map((p, idx, arr) => (
+              <span key={p} className="flex items-center gap-2">
+                {idx > 0 && arr[idx - 1] !== p - 1 && <span className="text-text-muted">…</span>}
+                <button
+                  type="button"
+                  onClick={() => irAPagina(p)}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm transition ${
+                    p === resultado.pagina ? "bg-black text-white" : "hover:bg-surface-muted"
+                  }`}
+                >
+                  {p}
+                </button>
+              </span>
+            ))}
+        </div>
+      )}
     </div>
   );
 }

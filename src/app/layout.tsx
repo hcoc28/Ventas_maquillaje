@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Poppins } from "next/font/google";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { siteConfig } from "@/config/site";
 import { jsonLdHtml } from "@/lib/json-ld";
 import "./globals.css";
@@ -40,7 +41,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: {
-    default: `${siteConfig.nombreCompleto} · Belleza de lujo`,
+    default: `${siteConfig.nombreCompleto} · Brilla con suavidad, florece con estilo`,
     template: `%s · ${siteConfig.nombreCompleto}`,
   },
   description: siteConfig.descripcion,
@@ -50,12 +51,12 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_GT",
     siteName: siteConfig.nombreCompleto,
-    title: `${siteConfig.nombreCompleto} · Belleza de lujo`,
+    title: `${siteConfig.nombreCompleto} · Brilla con suavidad, florece con estilo`,
     description: siteConfig.descripcion,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.nombreCompleto} · Belleza de lujo`,
+    title: `${siteConfig.nombreCompleto} · Brilla con suavidad, florece con estilo`,
     description: siteConfig.descripcion,
   },
 };
@@ -81,6 +82,7 @@ export default function RootLayout({
         </a>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(organizacionJsonLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(sitioWebJsonLd) }} />
+        <GoogleAnalytics />
         <SessionProvider>
           <ThemeProvider>{children}</ThemeProvider>
         </SessionProvider>

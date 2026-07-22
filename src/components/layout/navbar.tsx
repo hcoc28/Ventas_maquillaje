@@ -1,16 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { signOut, useSession } from "next-auth/react";
-import { Heart, LogOut, Menu, Package, Search, ShoppingBag, User, X } from "lucide-react";
+import axios from "axios";
+import { Heart, LayoutDashboard, LogOut, Menu, Package, Search, ShoppingBag, User, X } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { useNavbarTema } from "@/components/layout/navbar-theme-context";
 import { useCart } from "@/components/cart/cart-context";
-import { cn } from "@/lib/utils";
+import { cn, formatearMoneda } from "@/lib/utils";
 import type { CategoriaDto } from "@/types/catalogo";
+
+interface SugerenciaProducto {
+  slug: string;
+  nombre: string;
+  imagenUrl: string;
+  precio: number;
+}
 
 interface NavbarProps {
   categorias: CategoriaDto[];
@@ -30,6 +39,9 @@ export function Navbar({ categorias }: NavbarProps) {
   const [busquedaAbierta, setBusquedaAbierta] = useState(false);
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
   const [termino, setTermino] = useState("");
+  const [sugerencias, setSugerencias] = useState<SugerenciaProducto[]>([]);
+  const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -45,6 +57,29 @@ export function Navbar({ categorias }: NavbarProps) {
     setMenuAbierto(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(async () => {
+      if (!termino.trim()) {
+        setSugerencias([]);
+        return;
+      }
+      try {
+        const { data } = await axios.get<{ items: SugerenciaProducto[] }>("/api/productos/sugerencias", {
+          params: { q: termino.trim() },
+        });
+        setSugerencias(data.items);
+      } catch {
+        setSugerencias([]);
+      }
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [termino]);
+
   const esOscuroForzado = tema === "oscuro" && !scrolled;
 
   function handleBuscar(e: React.FormEvent) {
@@ -52,6 +87,14 @@ export function Navbar({ categorias }: NavbarProps) {
     if (!termino.trim()) return;
     router.push(`/catalogo?q=${encodeURIComponent(termino.trim())}`);
     setBusquedaAbierta(false);
+    setMostrarSugerencias(false);
+  }
+
+  function irAProducto(slug: string) {
+    router.push(`/producto/${slug}`);
+    setBusquedaAbierta(false);
+    setMostrarSugerencias(false);
+    setTermino("");
   }
 
   return (
@@ -69,7 +112,7 @@ export function Navbar({ categorias }: NavbarProps) {
             esOscuroForzado ? "text-white" : "text-foreground"
           )}
         >
-          Èclat
+          Amour Bloom
         </Link>
 
         <nav className="hidden items-center gap-7 lg:flex">
@@ -144,6 +187,15 @@ export function Navbar({ categorias }: NavbarProps) {
                     <Link href="/cuenta/favoritos" onClick={() => setCuentaAbierta(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-surface-muted">
                       <Heart size={15} /> Favoritos
                     </Link>
+                    {(session?.user?.role === "Administrador" || session?.user?.role === "Empleado") && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setCuentaAbierta(false)}
+                        className="flex items-center gap-2.5 border-t border-border px-4 py-2.5 text-sm text-accent-strong hover:bg-surface-muted"
+                      >
+                        <LayoutDashboard size={15} /> Panel de administración
+                      </Link>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
@@ -200,10 +252,33 @@ export function Navbar({ categorias }: NavbarProps) {
                   autoFocus
                   value={termino}
                   onChange={(e) => setTermino(e.target.value)}
+                  onFocus={() => setMostrarSugerencias(true)}
+                  onBlur={() => setTimeout(() => setMostrarSugerencias(false), 150)}
                   type="text"
                   placeholder="Buscar labiales, bases, skincare..."
                   className="w-full rounded-full border border-border bg-background py-3 pl-11 pr-4 text-sm outline-none focus:border-accent-strong"
                 />
+
+                {mostrarSugerencias && sugerencias.length > 0 && (
+                  <div className="absolute inset-x-0 top-full z-10 mt-2 max-h-96 overflow-y-auto rounded-2xl border border-border bg-surface shadow-[var(--shadow-strong)]">
+                    {sugerencias.map((producto) => (
+                      <button
+                        key={producto.slug}
+                        type="button"
+                        onMouseDown={() => irAProducto(producto.slug)}
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-surface-muted"
+                      >
+                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-muted">
+                          {producto.imagenUrl && (
+                            <Image src={producto.imagenUrl} alt={producto.nombre} fill sizes="40px" className="object-cover" />
+                          )}
+                        </div>
+                        <span className="min-w-0 flex-1 truncate text-sm">{producto.nombre}</span>
+                        <span className="shrink-0 text-sm font-semibold">{formatearMoneda(producto.precio)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </form>
           </motion.div>

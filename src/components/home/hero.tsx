@@ -119,7 +119,7 @@ export function Hero({ banners }: { banners: BannerDto[] }) {
               <div ref={wrapRef} className="relative z-[3] w-full" style={{ transformStyle: "preserve-3d" }}>
                 <div className="mx-auto max-w-7xl px-5 text-white sm:px-8" style={{ transform: "translateZ(0)" }}>
                   <span className="hero-eyebrow mb-4 block text-xs uppercase tracking-[0.3em] text-brand-gold-light">
-                    {splitCaracteres("Èclat Maquillaje")}
+                    {splitCaracteres("Amour Bloom")}
                   </span>
                   <h1 className="hero-title mb-6 max-w-3xl font-[family-name:var(--font-display)] text-4xl leading-[1.08] tracking-tight sm:mb-8 sm:text-6xl md:text-7xl lg:text-8xl">
                     {splitCaracteres(banner.titulo)}

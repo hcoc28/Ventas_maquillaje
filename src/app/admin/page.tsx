@@ -1,10 +1,23 @@
 import Link from "next/link";
 import { AlertTriangle, ClipboardList, DollarSign, Package, Users } from "lucide-react";
-import { getEstadisticasDashboard } from "@/server/services/dashboard.service";
-import { formatearMoneda } from "@/lib/utils";
+import { getEstadisticasDashboard, getReportesVentas } from "@/server/services/dashboard.service";
+import { cn, formatearMoneda } from "@/lib/utils";
 
-export default async function AdminDashboardPage() {
-  const stats = await getEstadisticasDashboard();
+const PERIODOS = [
+  { dias: 7, label: "7 días" },
+  { dias: 30, label: "30 días" },
+  { dias: 90, label: "90 días" },
+];
+
+interface Props {
+  searchParams: Promise<{ dias?: string }>;
+}
+
+export default async function AdminDashboardPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const diasSeleccionados = PERIODOS.some((p) => String(p.dias) === params.dias) ? Number(params.dias) : 30;
+
+  const [stats, reporte] = await Promise.all([getEstadisticasDashboard(), getReportesVentas(diasSeleccionados)]);
 
   const tarjetas = [
     { label: "Ingresos totales", valor: formatearMoneda(stats.ingresosTotales), icon: DollarSign },
@@ -12,6 +25,10 @@ export default async function AdminDashboardPage() {
     { label: "Productos activos", valor: stats.totalProductos, icon: Package },
     { label: "Usuarios activos", valor: stats.totalUsuarios, icon: Users },
   ];
+
+  const maxVentaDia = Math.max(...reporte.ventasPorDia.map((v) => v.total), 1);
+  const maxVentaCategoria = Math.max(...reporte.ventasPorCategoria.map((v) => v.total), 1);
+  const ingresosPeriodo = reporte.ventasPorDia.reduce((acc, v) => acc + v.total, 0);
 
   return (
     <div className="flex flex-col gap-8">
@@ -32,6 +49,96 @@ export default async function AdminDashboardPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="rounded-2xl bg-surface p-6 shadow-[var(--shadow-soft)]">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">Ventas por día</h2>
+            <p className="text-sm text-text-muted">
+              {formatearMoneda(ingresosPeriodo)} en los últimos {diasSeleccionados} días
+            </p>
+          </div>
+          <div className="flex gap-1.5 rounded-full border border-border p-1">
+            {PERIODOS.map((p) => (
+              <Link
+                key={p.dias}
+                href={`/admin?dias=${p.dias}`}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors",
+                  p.dias === diasSeleccionados ? "bg-black text-white" : "hover:bg-surface-muted"
+                )}
+              >
+                {p.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {reporte.ventasPorDia.length === 0 ? (
+          <p className="py-8 text-center text-sm text-text-muted">No hay ventas en este período.</p>
+        ) : (
+          <div className="flex h-40 items-end gap-1 overflow-x-auto">
+            {reporte.ventasPorDia.map((v) => (
+              <div
+                key={v.fecha}
+                title={`${new Date(v.fecha).toLocaleDateString("es-GT", { day: "numeric", month: "short" })}: ${formatearMoneda(v.total)}`}
+                className="flex min-w-[10px] flex-1 flex-col items-center justify-end"
+              >
+                <div
+                  className="w-full rounded-t bg-accent-strong transition-all hover:bg-accent"
+                  style={{ height: `${Math.max((v.total / maxVentaDia) * 100, 3)}%` }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl bg-surface p-6 shadow-[var(--shadow-soft)]">
+          <h2 className="mb-4 text-lg font-semibold">Ventas por categoría</h2>
+          {reporte.ventasPorCategoria.length === 0 ? (
+            <p className="py-8 text-center text-sm text-text-muted">No hay ventas en este período.</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {reporte.ventasPorCategoria.map((v) => (
+                <div key={v.categoria}>
+                  <div className="mb-1 flex items-center justify-between text-sm">
+                    <span className="font-medium">{v.categoria}</span>
+                    <span className="text-text-muted">{formatearMoneda(v.total)}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-surface-muted">
+                    <div className="h-full rounded-full bg-accent-strong" style={{ width: `${(v.total / maxVentaCategoria) * 100}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl bg-surface p-6 shadow-[var(--shadow-soft)]">
+          <h2 className="mb-4 text-lg font-semibold">Productos más vendidos</h2>
+          {reporte.topProductos.length === 0 ? (
+            <p className="py-8 text-center text-sm text-text-muted">No hay ventas en este período.</p>
+          ) : (
+            <div className="flex flex-col divide-y divide-border">
+              {reporte.topProductos.map((p) => (
+                <Link
+                  key={p.productId}
+                  href={`/admin/productos/${p.productId}`}
+                  className="flex items-center justify-between py-3 hover:text-accent-strong"
+                >
+                  <div>
+                    <p className="font-medium">{p.nombre}</p>
+                    <p className="text-xs text-text-muted">{p.unidadesVendidas} unidades vendidas</p>
+                  </div>
+                  <span className="font-semibold">{formatearMoneda(p.ingresos)}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

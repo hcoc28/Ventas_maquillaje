@@ -52,7 +52,7 @@ function RegistroForm() {
       <NavbarOscura />
       <div className="w-full max-w-lg rounded-3xl bg-surface p-10 shadow-[var(--shadow-strong)]">
         <div className="mb-8 text-center">
-          <span className="mb-1 block text-xs uppercase tracking-[0.3em] text-accent-strong">Únete a Èclat</span>
+          <span className="mb-1 block text-xs uppercase tracking-[0.3em] text-accent-strong">Únete a Amour Bloom</span>
           <h1 className="mt-1 font-[family-name:var(--font-display)] text-3xl">Crear Cuenta</h1>
           <p className="mt-2 text-sm text-text-muted">Guarda tus favoritos y consulta el historial de tus pedidos.</p>
         </div>

@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast-provider";
+import { ImagenInput } from "@/components/admin/imagen-input";
 import { categoriaAdminSchema, type CategoriaAdminInput } from "@/validators/admin";
 import { slugify } from "@/lib/utils";
 
@@ -76,8 +77,8 @@ export function CategoriaForm({ categoriaId, valoresIniciales }: { categoriaId?:
       </Campo>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Campo label="URL de imagen" error={errors.imagenUrl?.message}>
-          <input {...register("imagenUrl")} className={inputClass} />
+        <Campo label="Imagen" error={errors.imagenUrl?.message}>
+          <ImagenInput value={watch("imagenUrl") ?? ""} onChange={(url) => setValue("imagenUrl", url, { shouldValidate: true })} />
         </Campo>
         <Campo label="Ícono (nombre lucide)" error={errors.icono?.message}>
           <input {...register("icono")} className={inputClass} />

@@ -3,8 +3,18 @@ import { Plus } from "lucide-react";
 import { getTodosLosProductosAdmin } from "@/server/services/producto.service";
 import { ProductosTable } from "./productos-table";
 
-export default async function AdminProductosPage() {
-  const productos = await getTodosLosProductosAdmin();
+const TAMANO_PAGINA = 20;
+
+interface Props {
+  searchParams: Promise<{ pagina?: string; q?: string }>;
+}
+
+export default async function AdminProductosPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const pagina = Math.max(Number(params.pagina) || 1, 1);
+  const busqueda = params.q?.trim() || undefined;
+
+  const resultado = await getTodosLosProductosAdmin({ pagina, tamanoPagina: TAMANO_PAGINA, busqueda });
 
   return (
     <div className="flex flex-col gap-6">
@@ -21,7 +31,7 @@ export default async function AdminProductosPage() {
         </Link>
       </div>
 
-      <ProductosTable productos={productos} />
+      <ProductosTable resultado={resultado} busquedaInicial={busqueda ?? ""} />
     </div>
   );
 }

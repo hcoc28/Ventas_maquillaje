@@ -3,7 +3,7 @@ import { Gem, HeartHandshake, ShieldCheck, Truck } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Nosotros",
-  description: "Conoce la historia y los valores detrás de Èclat Maquillaje.",
+  description: "Conoce la historia y los valores detrás de Amour Bloom Maquillaje.",
   alternates: { canonical: "/nosotros" },
 };
 
@@ -19,12 +19,12 @@ export default function NosotrosPage() {
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-32 sm:px-8">
       <div className="mb-12 text-center">
         <span className="text-xs font-semibold uppercase tracking-[0.3em] text-accent-strong">Nuestra historia</span>
-        <h1 className="mt-1 font-[family-name:var(--font-display)] text-4xl">Sobre Èclat</h1>
+        <h1 className="mt-1 font-[family-name:var(--font-display)] text-4xl">Sobre Amour Bloom</h1>
       </div>
 
       <div className="flex flex-col gap-5 text-sm leading-relaxed text-text-muted sm:text-base">
         <p>
-          Èclat nació de una idea simple: la alta cosmética debería sentirse cercana, no intimidante. Reunimos
+          Amour Bloom nació de una idea simple: la alta cosmética debería sentirse cercana, no intimidante. Reunimos
           maquillaje y skincare de marcas de lujo cuidadosamente seleccionadas, y transformamos la experiencia de
           compra en algo tan personal como una recomendación de una amiga de confianza.
         </p>

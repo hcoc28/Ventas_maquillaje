@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Términos y Condiciones",
-  description: "Condiciones de uso, compra y devoluciones de Èclat Maquillaje.",
+  description: "Condiciones de uso, compra y devoluciones de Amour Bloom Maquillaje.",
   alternates: { canonical: "/terminos" },
 };
 
@@ -46,7 +46,7 @@ export default function TerminosPage() {
           <p>
             Aceptamos cambios y devoluciones dentro de los 7 días posteriores a la entrega, siempre que el producto
             no haya sido usado y conserve su empaque original. Los costos de envío de una devolución corren por
-            cuenta del cliente, salvo error atribuible a Èclat Maquillaje.
+            cuenta del cliente, salvo error atribuible a Amour Bloom Maquillaje.
           </p>
         </section>
 
@@ -61,7 +61,7 @@ export default function TerminosPage() {
         <section>
           <h2 className="mb-2 text-base font-semibold text-foreground">6. Propiedad intelectual</h2>
           <p>
-            Todo el contenido de este sitio (textos, imágenes, logotipos y diseño) es propiedad de Èclat Maquillaje o
+            Todo el contenido de este sitio (textos, imágenes, logotipos y diseño) es propiedad de Amour Bloom Maquillaje o
             de sus respectivas marcas y no puede reproducirse sin autorización previa.
           </p>
         </section>

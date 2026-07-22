@@ -23,6 +23,10 @@ export async function getPedidosPorUsuario(userId: number) {
   });
 }
 
+export async function getPedidoPorNumero(numeroPedido: string) {
+  return prisma.order.findUnique({ where: { numeroPedido } });
+}
+
 export async function getTodosLosPedidos() {
   return prisma.order.findMany({
     include: { details: true, user: { select: { nombre: true, apellido: true, email: true } } },

@@ -1,12 +1,13 @@
 import * as productoRepo from "@/server/repositories/producto.repository";
 import { precioFinal } from "@/server/services/producto.service";
+import { validarCupon } from "@/server/services/cupon.service";
 import type { Carrito, CarritoItem, CarritoItemInput } from "@/types/carrito";
 
 const CANTIDAD_MAXIMA = 20;
 
-export async function calcularCarrito(items: CarritoItemInput[]): Promise<Carrito> {
+export async function calcularCarrito(items: CarritoItemInput[], codigoCupon?: string): Promise<Carrito> {
   if (items.length === 0) {
-    return { items: [], subtotal: 0, total: 0, cantidadTotalItems: 0 };
+    return { items: [], subtotal: 0, descuento: 0, total: 0, cantidadTotalItems: 0 };
   }
 
   const ids = [...new Set(items.map((i) => i.productoId))];
@@ -49,10 +50,32 @@ export async function calcularCarrito(items: CarritoItemInput[]): Promise<Carrit
 
   const subtotal = Math.round(resultado.reduce((acc, i) => acc + i.subtotal, 0) * 100) / 100;
 
+  let descuento = 0;
+  let codigoCuponAplicado: string | undefined;
+  let cuponIdAplicado: number | undefined;
+  let cuponError: string | undefined;
+
+  if (codigoCupon?.trim()) {
+    const validacion = await validarCupon(codigoCupon);
+    if (validacion.valido) {
+      descuento = Math.round(subtotal * (validacion.cupon.porcentajeDescuento / 100) * 100) / 100;
+      codigoCuponAplicado = validacion.cupon.codigo;
+      cuponIdAplicado = validacion.cupon.id;
+    } else {
+      cuponError = validacion.mensaje;
+    }
+  }
+
+  const total = Math.round((subtotal - descuento) * 100) / 100;
+
   return {
     items: resultado,
     subtotal,
-    total: subtotal,
+    descuento,
+    total,
     cantidadTotalItems: resultado.reduce((acc, i) => acc + i.cantidad, 0),
+    codigoCupon: codigoCuponAplicado,
+    cuponId: cuponIdAplicado,
+    cuponError,
   };
 }

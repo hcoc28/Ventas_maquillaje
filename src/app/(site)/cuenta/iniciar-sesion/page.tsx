@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { NavbarOscura } from "@/components/layout/navbar-theme-context";
@@ -20,7 +20,8 @@ export default function IniciarSesionPage() {
 function IniciarSesionForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("callbackUrl") || "/cuenta";
+  const callbackUrlParam = searchParams.get("callbackUrl");
+  const returnUrl = callbackUrlParam || "/cuenta";
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
 
   const {
@@ -38,7 +39,15 @@ function IniciarSesionForm() {
       return;
     }
 
-    router.push(returnUrl);
+    // Si no venías redirigido desde una página específica (ej. te mandaron a /admin/algo y por
+    // eso hay callbackUrl), mandamos al staff directo al panel en vez de a "Mi cuenta".
+    if (callbackUrlParam) {
+      router.push(callbackUrlParam);
+    } else {
+      const session = await getSession();
+      const esStaff = session?.user?.role === "Administrador" || session?.user?.role === "Empleado";
+      router.push(esStaff ? "/admin" : "/cuenta");
+    }
     router.refresh();
   }
 
@@ -61,6 +70,10 @@ function IniciarSesionForm() {
           <Campo label="Contraseña" error={errors.password?.message}>
             <input {...register("password")} type="password" autoComplete="current-password" className={inputClass} />
           </Campo>
+
+          <Link href="/cuenta/recuperar" className="-mt-2 self-end text-xs font-medium text-accent-strong hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
 
           <button
             type="submit"

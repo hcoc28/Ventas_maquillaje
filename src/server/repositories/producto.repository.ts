@@ -108,6 +108,11 @@ export async function getSlugsActivos(): Promise<string[]> {
   return productos.map((p) => p.slug);
 }
 
+/** Solo lo esencial para el sitemap — evita traer todas las relaciones (categoría, marca, imágenes, etc). */
+export async function getSlugsYFechasActivos(): Promise<{ slug: string; updatedAt: Date }[]> {
+  return prisma.product.findMany({ where: { activo: true }, select: { slug: true, updatedAt: true } });
+}
+
 export async function getProductoBySlug(slug: string) {
   return prisma.product.findFirst({
     where: { slug, activo: true },
@@ -189,11 +194,37 @@ export async function getProductoById(id: number) {
 
 export type ProductoConRelaciones = Prisma.ProductGetPayload<{ include: typeof includeCompleto }>;
 
-export async function getTodosLosProductosAdmin() {
-  return prisma.product.findMany({
-    include: includeCompleto,
-    orderBy: { updatedAt: "desc" },
-  });
+export interface FiltroProductosAdmin {
+  pagina: number;
+  tamanoPagina: number;
+  busqueda?: string;
+}
+
+export async function getTodosLosProductosAdmin(filtro: FiltroProductosAdmin) {
+  const { pagina, tamanoPagina, busqueda } = filtro;
+
+  const where: Prisma.ProductWhereInput = busqueda
+    ? {
+        OR: [
+          { nombre: { contains: busqueda } },
+          { brand: { nombre: { contains: busqueda } } },
+          { category: { nombre: { contains: busqueda } } },
+        ],
+      }
+    : {};
+
+  const [total, items] = await Promise.all([
+    prisma.product.count({ where }),
+    prisma.product.findMany({
+      where,
+      include: includeCompleto,
+      orderBy: { updatedAt: "desc" },
+      skip: (pagina - 1) * tamanoPagina,
+      take: tamanoPagina,
+    }),
+  ]);
+
+  return { items, total };
 }
 
 function datosProducto(data: ProductoAdminInput) {

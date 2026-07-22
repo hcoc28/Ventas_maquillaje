@@ -11,30 +11,25 @@ function InstagramIcon() {
   );
 }
 
-function FacebookIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-    </svg>
-  );
-}
-
 export function Footer() {
   return (
     <footer className="bg-black px-5 pb-8 pt-16 text-ivory sm:px-8" style={{ color: "var(--color-ivory)" }}>
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-1 gap-10 border-b border-white/10 pb-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="mb-3 font-[family-name:var(--font-display)] text-2xl text-white">Èclat</div>
+            <div className="mb-3 font-[family-name:var(--font-display)] text-2xl text-white">Amour Bloom</div>
             <p className="mb-4 max-w-xs text-sm text-white/65">
-              Maquillaje y skincare de alta cosmética, seleccionados para realzar tu belleza con elegancia atemporal.
+              Brilla con suavidad, florece con estilo. Tienda en línea con productos 100% originales.
             </p>
             <div className="flex gap-2.5">
-              <a href="#" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 transition-colors hover:bg-accent">
+              <a
+                href="https://www.instagram.com/amourbloom_"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 transition-colors hover:bg-accent"
+              >
                 <InstagramIcon />
-              </a>
-              <a href="#" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 transition-colors hover:bg-accent">
-                <FacebookIcon />
               </a>
             </div>
           </div>
@@ -67,7 +62,7 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col items-center justify-between gap-3 pt-6 text-xs text-white/50 sm:flex-row">
-          <span>&copy; {new Date().getFullYear()} Èclat Maquillaje. Todos los derechos reservados.</span>
+          <span>&copy; {new Date().getFullYear()} Amour Bloom. Todos los derechos reservados.</span>
           <div className="flex gap-5">
             <Link href="/privacidad" className="hover:text-white">Privacidad</Link>
             <Link href="/terminos" className="hover:text-white">Términos</Link>

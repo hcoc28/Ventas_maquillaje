@@ -12,6 +12,10 @@ export function construirMensajeWhatsApp(pedido: PedidoResumen): string {
     lineas.push(`• ${detalle.nombreProducto} x${detalle.cantidad} — ${formatearMoneda(detalle.subtotal)}`);
   }
   lineas.push("");
+  lineas.push(`*Subtotal:* ${formatearMoneda(pedido.subtotal)}`);
+  if (pedido.descuento > 0) {
+    lineas.push(`*Descuento${pedido.cuponCodigo ? ` (${pedido.cuponCodigo})` : ""}:* -${formatearMoneda(pedido.descuento)}`);
+  }
   lineas.push(`*Total:* ${formatearMoneda(pedido.total)}`);
   lineas.push("");
   lineas.push(`*Nombre:* ${pedido.nombreContacto}`);

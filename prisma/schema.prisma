@@ -32,16 +32,31 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  role         Role          @relation(fields: [roleId], references: [id])
-  orders       Order[]
-  reviews      Review[]
-  favorites    Favorite[]
-  cart         Cart?
-  activityLogs ActivityLog[]
-  auditLogs    AuditLog[]
+  role                Role                 @relation(fields: [roleId], references: [id])
+  orders              Order[]
+  reviews             Review[]
+  favorites           Favorite[]
+  cart                Cart?
+  activityLogs        ActivityLog[]
+  auditLogs           AuditLog[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([roleId])
   @@map("users")
+}
+
+model PasswordResetToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  token     String    @unique @db.NVarChar(128)
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 model Category {
@@ -93,6 +108,21 @@ model Promotion {
   products Product[]
 
   @@map("promotions")
+}
+
+model Coupon {
+  id                  Int       @id @default(autoincrement())
+  codigo              String    @unique @db.NVarChar(30)
+  porcentajeDescuento Decimal   @map("porcentaje_descuento") @db.Decimal(5, 2)
+  fechaInicio         DateTime  @map("fecha_inicio")
+  fechaFin            DateTime  @map("fecha_fin")
+  usoMaximo           Int?      @map("uso_maximo")
+  vecesUsado          Int       @default(0) @map("veces_usado")
+  activo              Boolean   @default(true)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@map("coupons")
 }
 
 model Product {
@@ -163,6 +193,8 @@ model Order {
   userId           Int      @map("user_id")
   estado           String   @default("Pendiente") @db.NVarChar(20)
   subtotal         Decimal  @db.Decimal(10, 2)
+  descuento        Decimal  @default(0) @db.Decimal(10, 2)
+  cuponCodigo      String?  @map("cupon_codigo") @db.NVarChar(30)
   total            Decimal  @db.Decimal(10, 2)
   nombreContacto   String   @map("nombre_contacto") @db.NVarChar(150)
   telefonoContacto String   @map("telefono_contacto") @db.NVarChar(30)
@@ -248,16 +280,16 @@ model Favorite {
 }
 
 model Banner {
-  id                  Int       @id @default(autoincrement())
-  titulo              String    @db.NVarChar(150)
-  subtitulo           String?   @db.NVarChar(300)
-  imagenUrl           String    @map("imagen_url") @db.NVarChar(500)
-  textoBotonPrimario  String?   @map("texto_boton_primario") @db.NVarChar(60)
-  urlBotonPrimario    String?   @map("url_boton_primario") @db.NVarChar(300)
-  orden               Int       @default(0)
-  activo              Boolean   @default(true)
-  createdAt           DateTime  @default(now()) @map("created_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
+  id                 Int      @id @default(autoincrement())
+  titulo             String   @db.NVarChar(150)
+  subtitulo          String?  @db.NVarChar(300)
+  imagenUrl          String   @map("imagen_url") @db.NVarChar(500)
+  textoBotonPrimario String?  @map("texto_boton_primario") @db.NVarChar(60)
+  urlBotonPrimario   String?  @map("url_boton_primario") @db.NVarChar(300)
+  orden              Int      @default(0)
+  activo             Boolean  @default(true)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@map("banners")
 }

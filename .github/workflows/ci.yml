@@ -52,6 +52,9 @@ jobs:
       - name: Verificación de tipos
         run: npx tsc --noEmit
 
+      - name: Tests unitarios
+        run: npm test
+
       - name: Aplicar migraciones de Prisma
         run: npx prisma migrate deploy
 
