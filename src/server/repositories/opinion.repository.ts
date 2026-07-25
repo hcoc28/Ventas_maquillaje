@@ -32,3 +32,21 @@ export async function crearOpinion(productId: number, userId: number, calificaci
     data: { productId, userId, calificacion, comentario, aprobada: false },
   });
 }
+
+export async function getTodasLasOpinionesAdmin() {
+  return prisma.review.findMany({
+    include: {
+      product: { select: { nombre: true, slug: true } },
+      user: { select: { nombre: true, apellido: true } },
+    },
+    orderBy: [{ aprobada: "asc" }, { createdAt: "desc" }],
+  });
+}
+
+export async function aprobarOpinion(id: number) {
+  return prisma.review.update({ where: { id }, data: { aprobada: true } });
+}
+
+export async function eliminarOpinion(id: number) {
+  return prisma.review.delete({ where: { id } });
+}

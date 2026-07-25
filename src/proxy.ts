@@ -37,6 +37,7 @@ const RUTAS_LIMITADAS: { ruta: string; limite: number; ventanaMs: number }[] = [
   { ruta: "/api/contacto", limite: 5, ventanaMs: 60_000 },
   { ruta: "/api/pedidos", limite: 10, ventanaMs: 60_000 },
   { ruta: "/api/favoritos/alternar", limite: 30, ventanaMs: 60_000 },
+  { ruta: "/api/productos/opiniones", limite: 10, ventanaMs: 60_000 },
 ];
 
 export default auth(async (request) => {
@@ -83,5 +84,6 @@ export const config = {
     "/api/contacto",
     "/api/pedidos",
     "/api/favoritos/alternar",
+    "/api/productos/opiniones",
   ],
 };

@@ -23,3 +23,15 @@ export async function crearOpinion(
   await opinionRepo.crearOpinion(productoId, userId, calificacion, comentario.trim());
   return { exitoso: true, valor: true };
 }
+
+export async function listarOpinionesAdmin() {
+  return opinionRepo.getTodasLasOpinionesAdmin();
+}
+
+export async function aprobarOpinionAdmin(id: number) {
+  return opinionRepo.aprobarOpinion(id);
+}
+
+export async function eliminarOpinionAdmin(id: number) {
+  return opinionRepo.eliminarOpinion(id);
+}

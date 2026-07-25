@@ -135,6 +135,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
 
           <div className="mt-10">
             <ProductTabs
+              productoId={producto.id}
               descripcionLarga={producto.descripcionLarga}
               beneficios={producto.beneficios}
               ingredientes={producto.ingredientes}

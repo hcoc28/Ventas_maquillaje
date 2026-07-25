@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import axios from "axios";
+import { useSession } from "next-auth/react";
 import type { OpinionDto } from "@/types/catalogo";
+import { useToast } from "@/components/ui/toast-provider";
 
 interface Props {
+  productoId: number;
   descripcionLarga: string;
   beneficios: string | null;
   ingredientes: string | null;
@@ -13,7 +18,96 @@ interface Props {
 
 const TABS = ["Descripción", "Ingredientes", "Modo de uso", "Opiniones"] as const;
 
-export function ProductTabs({ descripcionLarga, beneficios, ingredientes, modoUso, opiniones }: Props) {
+function ReviewForm({ productoId }: { productoId: number }) {
+  const { status } = useSession();
+  const { mostrar } = useToast();
+  const [calificacion, setCalificacion] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [comentario, setComentario] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [enviada, setEnviada] = useState(false);
+
+  if (status !== "authenticated") {
+    return (
+      <p className="mb-6 text-sm text-text-muted">
+        <Link href="/cuenta/iniciar-sesion" className="font-semibold text-accent-strong hover:underline">
+          Inicia sesión
+        </Link>{" "}
+        para dejar tu opinión sobre este producto.
+      </p>
+    );
+  }
+
+  if (enviada) {
+    return (
+      <p className="mb-6 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700">
+        ¡Gracias por tu opinión! Se publicará luego de ser revisada.
+      </p>
+    );
+  }
+
+  async function enviar(e: React.FormEvent) {
+    e.preventDefault();
+    if (calificacion < 1) {
+      mostrar("Selecciona una calificación.", "error");
+      return;
+    }
+    if (!comentario.trim()) {
+      mostrar("Escribe un comentario.", "error");
+      return;
+    }
+    setEnviando(true);
+    try {
+      await axios.post("/api/productos/opiniones", { productoId, calificacion, comentario: comentario.trim() });
+      setEnviada(true);
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo enviar tu opinión.", "error");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <form onSubmit={enviar} className="mb-8 rounded-xl border border-border p-4">
+      <p className="mb-2 text-sm font-semibold">Deja tu opinión</p>
+      <div className="mb-3 flex gap-1 text-2xl text-brand-gold">
+        {Array.from({ length: 5 }).map((_, i) => {
+          const valor = i + 1;
+          return (
+            <button
+              key={valor}
+              type="button"
+              onClick={() => setCalificacion(valor)}
+              onMouseEnter={() => setHover(valor)}
+              onMouseLeave={() => setHover(0)}
+              aria-label={`${valor} estrellas`}
+            >
+              {valor <= (hover || calificacion) ? "★" : "☆"}
+            </button>
+          );
+        })}
+      </div>
+      <textarea
+        value={comentario}
+        onChange={(e) => setComentario(e.target.value)}
+        rows={3}
+        maxLength={1000}
+        placeholder="Cuéntanos qué te pareció el producto..."
+        className="mb-3 w-full rounded-lg border border-border bg-transparent p-3 text-sm outline-none focus:border-accent-strong"
+      />
+      <button
+        type="submit"
+        disabled={enviando}
+        className="rounded-full bg-black px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent-strong disabled:opacity-60"
+      >
+        {enviando ? "Enviando..." : "Enviar opinión"}
+      </button>
+    </form>
+  );
+}
+
+export function ProductTabs({ productoId, descripcionLarga, beneficios, ingredientes, modoUso, opiniones }: Props) {
   const [activa, setActiva] = useState<(typeof TABS)[number]>("Descripción");
 
   return (
@@ -49,6 +143,8 @@ export function ProductTabs({ descripcionLarga, beneficios, ingredientes, modoUs
 
       {activa === "Opiniones" && (
         <div>
+          <ReviewForm productoId={productoId} />
+
           {opiniones.length === 0 ? (
             <p className="text-text-muted">Este producto aún no tiene opiniones.</p>
           ) : (
