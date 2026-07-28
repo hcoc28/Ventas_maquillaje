@@ -7,6 +7,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { NavbarOscura } from "@/components/layout/navbar-theme-context";
+import { PasswordInput } from "@/components/ui/password-input";
 import { restablecerPasswordSchema, type RestablecerPasswordInput } from "@/validators/auth";
 
 export default function RestablecerPasswordPage() {
@@ -84,9 +85,8 @@ function RestablecerPasswordForm() {
 
               <label className="flex flex-col gap-1.5 text-left text-sm">
                 <span className="font-semibold">Nueva contraseña</span>
-                <input
+                <PasswordInput
                   {...register("password")}
-                  type="password"
                   autoComplete="new-password"
                   className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-accent-strong"
                 />
@@ -95,9 +95,8 @@ function RestablecerPasswordForm() {
 
               <label className="flex flex-col gap-1.5 text-left text-sm">
                 <span className="font-semibold">Confirmar contraseña</span>
-                <input
+                <PasswordInput
                   {...register("confirmPassword")}
-                  type="password"
                   autoComplete="new-password"
                   className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-accent-strong"
                 />

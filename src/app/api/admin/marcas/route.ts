@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { marcaAdminSchema } from "@/validators/admin";
 import { crearMarca, getTodasLasMarcasAdmin } from "@/server/services/marca.service";
@@ -26,6 +27,8 @@ export async function POST(request: NextRequest) {
     valoresNuevos: parsed.data,
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
+
+  revalidatePath("/");
 
   return NextResponse.json(marca, { status: 201 });
 }

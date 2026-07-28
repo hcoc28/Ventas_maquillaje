@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { productoAdminSchema } from "@/validators/admin";
 import { actualizarProductoAdmin, eliminarProductoAdmin, getProductoPorIdAdmin } from "@/server/services/producto.service";
@@ -30,6 +31,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
 
+  revalidatePath("/");
+  revalidatePath("/producto/[slug]", "page");
+
   return NextResponse.json(producto);
 }
 
@@ -44,6 +48,9 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     accion: "eliminar",
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
+
+  revalidatePath("/");
+  revalidatePath("/producto/[slug]", "page");
 
   return NextResponse.json({ ok: true });
 }

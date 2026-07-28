@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { promocionAdminSchema } from "@/validators/admin";
 import { actualizarPromocion, eliminarPromocion } from "@/server/services/promocion.service";
@@ -23,6 +24,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
 
+  revalidatePath("/");
+  revalidatePath("/producto/[slug]", "page");
+
   return NextResponse.json(promocion);
 }
 
@@ -37,6 +41,9 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     accion: "eliminar",
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
+
+  revalidatePath("/");
+  revalidatePath("/producto/[slug]", "page");
 
   return NextResponse.json({ ok: true });
 }

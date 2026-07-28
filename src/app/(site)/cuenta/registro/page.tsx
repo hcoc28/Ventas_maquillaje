@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import { NavbarOscura } from "@/components/layout/navbar-theme-context";
+import { PasswordInput } from "@/components/ui/password-input";
 import { registroSchema, type RegistroInput } from "@/validators/auth";
 
 export default function RegistroPage() {
@@ -79,10 +80,10 @@ function RegistroForm() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Campo label="Contraseña" error={errors.password?.message}>
-              <input {...register("password")} type="password" autoComplete="new-password" className={inputClass} />
+              <PasswordInput {...register("password")} autoComplete="new-password" className={inputClass} />
             </Campo>
             <Campo label="Confirmar contraseña" error={errors.confirmPassword?.message}>
-              <input {...register("confirmPassword")} type="password" autoComplete="new-password" className={inputClass} />
+              <PasswordInput {...register("confirmPassword")} autoComplete="new-password" className={inputClass} />
             </Campo>
           </div>
           <span className="text-xs text-text-muted">Mínimo 8 caracteres, con mayúscula, número y símbolo.</span>

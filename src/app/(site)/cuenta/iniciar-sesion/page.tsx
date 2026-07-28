@@ -7,6 +7,7 @@ import { getSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { NavbarOscura } from "@/components/layout/navbar-theme-context";
+import { PasswordInput } from "@/components/ui/password-input";
 import { loginSchema, type LoginInput } from "@/validators/auth";
 
 export default function IniciarSesionPage() {
@@ -68,7 +69,7 @@ function IniciarSesionForm() {
             <input {...register("email")} type="email" autoComplete="email" className={inputClass} />
           </Campo>
           <Campo label="Contraseña" error={errors.password?.message}>
-            <input {...register("password")} type="password" autoComplete="current-password" className={inputClass} />
+            <PasswordInput {...register("password")} autoComplete="current-password" className={inputClass} />
           </Campo>
 
           <Link href="/cuenta/recuperar" className="-mt-2 self-end text-xs font-medium text-accent-strong hover:underline">

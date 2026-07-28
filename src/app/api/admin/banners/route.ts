@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { bannerAdminSchema } from "@/validators/admin";
 import { crearBanner, getTodosLosBannersAdmin } from "@/server/services/banner.service";
@@ -26,6 +27,8 @@ export async function POST(request: NextRequest) {
     valoresNuevos: parsed.data,
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
+
+  revalidatePath("/");
 
   return NextResponse.json(banner, { status: 201 });
 }

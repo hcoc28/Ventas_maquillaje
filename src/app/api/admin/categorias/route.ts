@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { categoriaAdminSchema } from "@/validators/admin";
 import { crearCategoria, getTodasLasCategoriasAdmin } from "@/server/services/categoria.service";
@@ -26,6 +27,8 @@ export async function POST(request: NextRequest) {
     valoresNuevos: parsed.data,
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
+
+  revalidatePath("/");
 
   return NextResponse.json(categoria, { status: 201 });
 }

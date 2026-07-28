@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { marcaAdminSchema } from "@/validators/admin";
 import { actualizarMarca, eliminarMarca } from "@/server/services/marca.service";
@@ -23,6 +24,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
 
+  revalidatePath("/");
+
   return NextResponse.json(marca);
 }
 
@@ -37,6 +40,8 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     accion: "eliminar",
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
+
+  revalidatePath("/");
 
   return NextResponse.json({ ok: true });
 }

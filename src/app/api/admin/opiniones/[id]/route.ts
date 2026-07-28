@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { aprobarOpinionAdmin, eliminarOpinionAdmin } from "@/server/services/opinion.service";
 import { registrarAuditoria } from "@/server/services/log.service";
@@ -15,6 +16,8 @@ export async function PATCH(_request: NextRequest, { params }: { params: Promise
     valoresNuevos: { aprobada: true },
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
+
+  revalidatePath("/producto/[slug]", "page");
 
   return NextResponse.json(opinion);
 }

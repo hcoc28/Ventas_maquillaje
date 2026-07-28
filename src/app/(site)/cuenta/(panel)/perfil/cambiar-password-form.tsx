@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast-provider";
+import { PasswordInput } from "@/components/ui/password-input";
 import { cambiarPasswordSchema, type CambiarPasswordInput } from "@/validators/auth";
 
 export function CambiarPasswordForm() {
@@ -35,15 +36,15 @@ export function CambiarPasswordForm() {
       {errorGeneral && <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{errorGeneral}</div>}
 
       <Campo label="Contraseña actual" error={errors.passwordActual?.message}>
-        <input {...register("passwordActual")} type="password" autoComplete="current-password" className={inputClass} />
+        <PasswordInput {...register("passwordActual")} autoComplete="current-password" className={inputClass} />
       </Campo>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Campo label="Nueva contraseña" error={errors.passwordNueva?.message}>
-          <input {...register("passwordNueva")} type="password" autoComplete="new-password" className={inputClass} />
+          <PasswordInput {...register("passwordNueva")} autoComplete="new-password" className={inputClass} />
         </Campo>
         <Campo label="Confirmar contraseña" error={errors.confirmPassword?.message}>
-          <input {...register("confirmPassword")} type="password" autoComplete="new-password" className={inputClass} />
+          <PasswordInput {...register("confirmPassword")} autoComplete="new-password" className={inputClass} />
         </Campo>
       </div>
       <span className="text-xs text-text-muted">Mínimo 8 caracteres, con mayúscula, número y símbolo.</span>
