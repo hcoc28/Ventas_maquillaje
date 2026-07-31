@@ -1,9 +1,8 @@
 "use client";
 
-import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Heart, ShoppingBag, Star } from "lucide-react";
 import { formatearMoneda } from "@/lib/utils";
 import { useCart } from "@/components/cart/cart-context";
@@ -15,23 +14,6 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
   const { agregar } = useCart();
   const { esFavorito, alternar } = useFavoritos();
   const favorito = esFavorito(producto.id);
-  const prefiereMenosMovimiento = useReducedMotion();
-  const productoRef = useRef<HTMLDivElement>(null);
-
-  function onMouseMove(e: React.MouseEvent<HTMLElement>) {
-    if (prefiereMenosMovimiento || !productoRef.current) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width;
-    const py = (e.clientY - rect.top) / rect.height;
-    productoRef.current.style.setProperty("--rx", `${(0.5 - py) * 14}deg`);
-    productoRef.current.style.setProperty("--ry", `${(px - 0.5) * 14}deg`);
-  }
-
-  function onMouseLeave() {
-    if (!productoRef.current) return;
-    productoRef.current.style.setProperty("--rx", "0deg");
-    productoRef.current.style.setProperty("--ry", "0deg");
-  }
 
   return (
     <motion.article
@@ -43,8 +25,6 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
     >
       <Link
         href={`/producto/${producto.slug}`}
-        onMouseMove={onMouseMove}
-        onMouseLeave={onMouseLeave}
         className="relative block aspect-square overflow-hidden bg-surface-muted"
         style={{ perspective: 900 }}
       >
@@ -60,15 +40,19 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
           />
         </div>
 
-        {/* Producto: avanza hacia el cliente, se agranda y proyecta sombra */}
-        <div ref={productoRef} className="product-card-product">
-          <Image
-            src={producto.imagenPrincipalUrl}
-            alt={producto.nombre}
-            fill
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-            className="object-cover"
-          />
+        {/* Producto: avanza hacia el cliente y se encoge, revelando el fondo.
+            El transform 3D y el recorte de bordes van en elementos separados:
+            mezclarlos en el mismo elemento rompe el render en varios navegadores. */}
+        <div className="product-card-product">
+          <div className="product-card-product-clip">
+            <Image
+              src={producto.imagenPrincipalUrl}
+              alt={producto.nombre}
+              fill
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+              className="object-cover"
+            />
+          </div>
         </div>
       </Link>
 

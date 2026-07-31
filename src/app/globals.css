@@ -209,26 +209,40 @@ h1, h2, h3, h4, h5 {
   filter: blur(9px) brightness(0.4) saturate(0.7);
 }
 
+/* Capa que SOLO se mueve en 3D — sin overflow/filter/mask propios, que fuerzan
+   transform-style: flat en varios navegadores y rompen el translateZ. Sin variables
+   CSS dentro del transform: algunos navegadores no recalculan bien rotateX(var(...))
+   combinado con perspective + preserve-3d. */
 .product-card-product {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(0) scale(1);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.group:hover .product-card-product {
+  transform: translateZ(70px) scale(0.82);
+}
+
+/* Capa hija que SOLO recorta bordes y proyecta sombra — nunca lleva el transform 3D. */
+.product-card-product-clip {
   position: absolute;
   inset: 0;
   overflow: hidden;
   border-radius: 0;
   box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-  transform-style: preserve-3d;
-  transform: translateZ(0) scale(1) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.5s var(--ease-elegant), border-radius 0.5s var(--ease-elegant), box-shadow 0.5s var(--ease-elegant);
+  transition: filter 0.5s var(--ease-elegant), border-radius 0.5s var(--ease-elegant), box-shadow 0.5s var(--ease-elegant);
 }
-.group:hover .product-card-product {
+.group:hover .product-card-product-clip {
   border-radius: 14px;
-  transform: translateZ(70px) scale(0.82) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   filter: drop-shadow(0 25px 22px rgba(18, 16, 18, 0.5));
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5), 0 20px 30px -10px rgba(18, 16, 18, 0.5);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .product-card-backdrop,
-  .product-card-product {
+  .product-card-product,
+  .product-card-product-clip {
     transition: none !important;
   }
 }
