@@ -38,20 +38,28 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
       initial={{ opacity: 0, y: 32 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
+      whileHover={prefiereMenosMovimiento ? undefined : { y: -6 }}
       transition={{ duration: 0.5, delay: Math.min(index, 6) * 0.05, ease: [0.16, 1, 0.3, 1] }}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
-      style={{ rotateX, rotateY, transformPerspective: 800 }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-strong)]"
+      className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-soft)] transition-shadow duration-300 hover:shadow-[0_35px_60px_-20px_rgba(0,0,0,0.35)]"
     >
-      <Link href={`/producto/${producto.slug}`} className="relative block aspect-square overflow-hidden bg-surface-muted">
-        <Image
-          src={producto.imagenPrincipalUrl}
-          alt={producto.nombre}
-          fill
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-          className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
-        />
+      <Link
+        href={`/producto/${producto.slug}`}
+        onMouseMove={onMouseMove}
+        onMouseLeave={onMouseLeave}
+        className="relative block aspect-square overflow-hidden bg-surface-muted"
+        style={{ perspective: 700 }}
+      >
+        {/* Sombra que crece debajo del producto al pasar el mouse, dando sensación de que se eleva del fondo */}
+        <div className="pointer-events-none absolute inset-6 rounded-full bg-black/0 opacity-0 blur-2xl transition-all duration-500 group-hover:bg-black/30 group-hover:opacity-100" />
+        <motion.div style={{ rotateX, rotateY }} className="relative h-full w-full">
+          <Image
+            src={producto.imagenPrincipalUrl}
+            alt={producto.nombre}
+            fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+            className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110 group-hover:drop-shadow-[0_18px_16px_rgba(0,0,0,0.3)]"
+          />
+        </motion.div>
       </Link>
 
       <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
