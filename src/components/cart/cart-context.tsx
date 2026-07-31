@@ -127,7 +127,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         : [...items, { productoId, cantidad }];
       await actualizarItems(nuevos);
       mostrar("Producto agregado al carrito.");
-      setDrawerAbierto(true);
     },
     [items, actualizarItems, mostrar]
   );
