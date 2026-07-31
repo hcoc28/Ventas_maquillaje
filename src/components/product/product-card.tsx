@@ -28,31 +28,18 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
         className="relative block aspect-square overflow-hidden bg-surface-muted"
         style={{ perspective: 900 }}
       >
-        {/* Fondo: se hunde, se oscurece y se desenfoca al pasar el mouse */}
-        <div className="product-card-backdrop">
+        {/* Superficie: se inclina hacia atrás al pasar el mouse, como una mesa girando */}
+        <div className="product-card-plate" />
+
+        {/* Producto: sube y avanza hacia el cliente por encima de la superficie */}
+        <div className="product-card-photo">
           <Image
             src={producto.imagenPrincipalUrl}
-            alt=""
-            aria-hidden
+            alt={producto.nombre}
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
             className="object-cover"
           />
-        </div>
-
-        {/* Producto: avanza hacia el cliente y se encoge, revelando el fondo.
-            El transform 3D y el recorte de bordes van en elementos separados:
-            mezclarlos en el mismo elemento rompe el render en varios navegadores. */}
-        <div className="product-card-product">
-          <div className="product-card-product-clip">
-            <Image
-              src={producto.imagenPrincipalUrl}
-              alt={producto.nombre}
-              fill
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-              className="object-cover"
-            />
-          </div>
         </div>
       </Link>
 

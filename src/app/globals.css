@@ -194,55 +194,39 @@ h1, h2, h3, h4, h5 {
   background: rgba(255, 255, 255, 1);
 }
 
-/* ===== Tarjeta de producto: el fondo cae, el producto avanza en 3D =====
-   Las fotos llenan el 100% del cuadro (object-cover), así que para que el fondo
-   se alcance a VER hay que encoger el producto (no agrandarlo) al elevarlo —
-   agrandarlo solo taparía el fondo por completo con un simple zoom. */
-.product-card-backdrop {
+/* ===== Tarjeta de producto: la superficie se inclina, el producto avanza en 3D =====
+   Estructura mínima a propósito (sin overflow ni filter mezclados con el transform
+   3D, sin variables CSS dentro de transform) para máxima compatibilidad. */
+.product-card-plate {
   position: absolute;
-  inset: 0;
-  transform: translateZ(0) scale(1);
-  transition: transform 0.6s var(--ease-elegant), filter 0.6s var(--ease-elegant);
+  inset: 6%;
+  border-radius: 1.25rem;
+  background: var(--surface-muted);
+  box-shadow: inset 6px 6px 14px rgba(18, 16, 18, 0.08), inset -6px -6px 14px rgba(255, 255, 255, 0.6);
+  transform: translateZ(0);
+  transition: transform 0.6s var(--ease-elegant), box-shadow 0.6s var(--ease-elegant);
 }
-.group:hover .product-card-backdrop {
-  transform: translateZ(-50px) scale(1.2);
-  filter: blur(9px) brightness(0.4) saturate(0.7);
+.group:hover .product-card-plate {
+  transform: translateZ(-30px) rotateX(14deg);
+  box-shadow: inset 3px 3px 8px rgba(18, 16, 18, 0.1), inset -3px -3px 8px rgba(255, 255, 255, 0.4);
 }
 
-/* Capa que SOLO se mueve en 3D — sin overflow/filter/mask propios, que fuerzan
-   transform-style: flat en varios navegadores y rompen el translateZ. Sin variables
-   CSS dentro del transform: algunos navegadores no recalculan bien rotateX(var(...))
-   combinado con perspective + preserve-3d. */
-.product-card-product {
+.product-card-photo {
   position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  transform: translateZ(0) scale(1);
-  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.group:hover .product-card-product {
-  transform: translateZ(70px) scale(0.82);
-}
-
-/* Capa hija que SOLO recorta bordes y proyecta sombra — nunca lleva el transform 3D. */
-.product-card-product-clip {
-  position: absolute;
-  inset: 0;
+  inset: 9%;
+  border-radius: 1rem;
   overflow: hidden;
-  border-radius: 0;
-  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-  transition: filter 0.5s var(--ease-elegant), border-radius 0.5s var(--ease-elegant), box-shadow 0.5s var(--ease-elegant);
+  box-shadow: 0 10px 20px rgba(18, 16, 18, 0.15);
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.6s var(--ease-elegant);
 }
-.group:hover .product-card-product-clip {
-  border-radius: 14px;
-  filter: drop-shadow(0 25px 22px rgba(18, 16, 18, 0.5));
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5), 0 20px 30px -10px rgba(18, 16, 18, 0.5);
+.group:hover .product-card-photo {
+  transform: translateY(-14px) translateZ(60px);
+  box-shadow: 0 30px 40px rgba(18, 16, 18, 0.35);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .product-card-backdrop,
-  .product-card-product,
-  .product-card-product-clip {
+  .product-card-plate,
+  .product-card-photo {
     transition: none !important;
   }
 }
