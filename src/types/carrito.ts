@@ -30,6 +30,7 @@ export interface CrearPedidoInput {
   nombreContacto: string;
   telefonoContacto: string;
   direccionEntrega: string;
+  metodoPago: string;
   observaciones?: string;
   email?: string;
   items: CarritoItemInput[];
@@ -55,6 +56,7 @@ export interface PedidoResumen {
   nombreContacto: string;
   telefonoContacto: string;
   direccionEntrega: string;
+  metodoPago: string;
   observaciones: string | null;
   detalles: PedidoDetalleDto[];
   mensajeWhatsApp?: string;

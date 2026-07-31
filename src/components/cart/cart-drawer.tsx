@@ -11,7 +11,7 @@ import { ArrowLeft, Minus, Plus, ShoppingBag, Tag, Trash2, X } from "lucide-reac
 import { useCart } from "@/components/cart/cart-context";
 import { useToast } from "@/components/ui/toast-provider";
 import { formatearMoneda } from "@/lib/utils";
-import { datosContactoSchema, type DatosContactoInput } from "@/validators/pedido";
+import { datosContactoSchema, METODOS_PAGO, type DatosContactoInput } from "@/validators/pedido";
 
 export function CartDrawer() {
   const {
@@ -217,6 +217,18 @@ export function CartDrawer() {
                   </Campo>
                   <Campo label="Dirección de entrega *" error={errors.direccionEntrega?.message}>
                     <textarea {...register("direccionEntrega")} className={inputClass} rows={3} />
+                  </Campo>
+                  <Campo label="Método de pago *" error={errors.metodoPago?.message}>
+                    <select {...register("metodoPago")} className={inputClass} defaultValue="">
+                      <option value="" disabled>
+                        Selecciona una opción
+                      </option>
+                      {METODOS_PAGO.map((metodo) => (
+                        <option key={metodo} value={metodo}>
+                          {metodo}
+                        </option>
+                      ))}
+                    </select>
                   </Campo>
                   <Campo label="Correo electrónico" error={errors.email?.message}>
                     <input {...register("email")} type="email" className={inputClass} />

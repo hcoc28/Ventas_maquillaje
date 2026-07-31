@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const METODOS_PAGO = ["Transferencia", "Efectivo contra entrega"] as const;
+
 export const carritoItemInputSchema = z.object({
   productoId: z.number().int().positive(),
   cantidad: z.number().int().min(1).max(20),
@@ -9,6 +11,7 @@ export const crearPedidoSchema = z.object({
   nombreContacto: z.string().trim().min(3, "El nombre es obligatorio.").max(150),
   telefonoContacto: z.string().trim().min(8, "Ingresa un teléfono válido.").max(30),
   direccionEntrega: z.string().trim().min(5, "La dirección es obligatoria.").max(400),
+  metodoPago: z.enum(METODOS_PAGO, { message: "Selecciona un método de pago." }),
   observaciones: z.string().trim().max(1000).optional().or(z.literal("")),
   email: z.string().email().optional().or(z.literal("")),
   items: z.array(carritoItemInputSchema).min(1, "El carrito está vacío."),

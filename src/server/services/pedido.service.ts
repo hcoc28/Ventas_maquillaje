@@ -8,6 +8,7 @@ import { construirEnlaceWhatsApp, construirMensajeWhatsApp } from "@/server/serv
 import { registrarActividad } from "@/server/services/log.service";
 import { enviarEmail, plantillaBase } from "@/server/services/email.service";
 import { formatearMoneda } from "@/lib/utils";
+import { METODOS_PAGO } from "@/validators/pedido";
 import type { CrearPedidoInput, PedidoResumen, Resultado } from "@/types/carrito";
 
 async function enviarConfirmacionPedido(email: string, resumen: PedidoResumen): Promise<void> {
@@ -49,6 +50,7 @@ async function enviarConfirmacionPedido(email: string, resumen: PedidoResumen): 
         </tr>
       </table>
       <p style="font-size: 13px; color: #666;"><strong>Entrega:</strong> ${resumen.direccionEntrega}</p>
+      <p style="font-size: 13px; color: #666;"><strong>Método de pago:</strong> ${resumen.metodoPago}</p>
     `),
   });
 }
@@ -93,6 +95,7 @@ function mapearPedido(pedido: {
   nombreContacto: string;
   telefonoContacto: string;
   direccionEntrega: string;
+  metodoPago: string;
   observaciones: string | null;
   details: { nombreProducto: string; cantidad: number; precioUnitario: unknown }[];
 }): PedidoResumen {
@@ -108,6 +111,7 @@ function mapearPedido(pedido: {
     nombreContacto: pedido.nombreContacto,
     telefonoContacto: pedido.telefonoContacto,
     direccionEntrega: pedido.direccionEntrega,
+    metodoPago: pedido.metodoPago,
     observaciones: pedido.observaciones,
     detalles: pedido.details.map((d) => ({
       nombreProducto: d.nombreProducto,
@@ -121,6 +125,9 @@ function mapearPedido(pedido: {
 export async function crearPedido(input: CrearPedidoInput, userId: number | null): Promise<Resultado<PedidoResumen>> {
   if (!input.nombreContacto?.trim() || !input.telefonoContacto?.trim() || !input.direccionEntrega?.trim()) {
     return { exitoso: false, errores: ["Nombre, teléfono y dirección de entrega son obligatorios."] };
+  }
+  if (!METODOS_PAGO.includes(input.metodoPago as (typeof METODOS_PAGO)[number])) {
+    return { exitoso: false, errores: ["Selecciona un método de pago válido."] };
   }
 
   const carrito = await calcularCarrito(input.items, input.codigoCupon);
@@ -146,6 +153,7 @@ export async function crearPedido(input: CrearPedidoInput, userId: number | null
         nombreContacto: input.nombreContacto,
         telefonoContacto: input.telefonoContacto,
         direccionEntrega: input.direccionEntrega,
+        metodoPago: input.metodoPago,
         observaciones: input.observaciones || null,
         details: {
           create: carrito.items.map((item) => ({

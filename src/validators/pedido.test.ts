@@ -28,6 +28,7 @@ describe("crearPedidoSchema", () => {
     nombreContacto: "María González",
     telefonoContacto: "50255511122",
     direccionEntrega: "Zona 10, Ciudad de Guatemala",
+    metodoPago: "Efectivo contra entrega",
     items: [{ productoId: 1, cantidad: 2 }],
   };
 
@@ -52,6 +53,16 @@ describe("crearPedidoSchema", () => {
 
   it("rechaza correo con formato inválido cuando se proporciona", () => {
     const resultado = crearPedidoSchema.safeParse({ ...base, email: "no-es-correo" });
+    expect(resultado.success).toBe(false);
+  });
+
+  it("acepta 'Transferencia' como método de pago", () => {
+    const resultado = crearPedidoSchema.safeParse({ ...base, metodoPago: "Transferencia" });
+    expect(resultado.success).toBe(true);
+  });
+
+  it("rechaza un método de pago no permitido", () => {
+    const resultado = crearPedidoSchema.safeParse({ ...base, metodoPago: "Tarjeta de crédito" });
     expect(resultado.success).toBe(false);
   });
 });

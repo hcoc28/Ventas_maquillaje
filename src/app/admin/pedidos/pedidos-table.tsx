@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import axios from "axios";
+import { MessageCircle } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
 import { formatearMoneda } from "@/lib/utils";
 import { ESTADOS_PEDIDO } from "@/validators/admin";
+import { construirEnlaceNotificacionEstado } from "@/server/services/whatsapp.service";
 import type { getTodosLosPedidosAdmin } from "@/server/services/pedido.service";
 
 type Pedido = Awaited<ReturnType<typeof getTodosLosPedidosAdmin>>[number];
@@ -44,7 +46,9 @@ export function PedidosTable({ pedidos }: { pedidos: Pedido[] }) {
             <th className="px-5 py-3">Cliente</th>
             <th className="px-5 py-3">Fecha</th>
             <th className="px-5 py-3">Total</th>
+            <th className="px-5 py-3">Pago</th>
             <th className="px-5 py-3">Estado</th>
+            <th className="px-5 py-3 text-right">Notificar</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
@@ -59,6 +63,7 @@ export function PedidosTable({ pedidos }: { pedidos: Pedido[] }) {
                 </td>
                 <td className="px-5 py-3 text-text-muted">{new Date(p.fechaPedido).toLocaleDateString("es-GT")}</td>
                 <td className="px-5 py-3 font-semibold">{formatearMoneda(p.total)}</td>
+                <td className="px-5 py-3 text-text-muted">{p.metodoPago}</td>
                 <td className="px-5 py-3">
                   <select
                     value={estado}
@@ -74,6 +79,23 @@ export function PedidosTable({ pedidos }: { pedidos: Pedido[] }) {
                       </option>
                     ))}
                   </select>
+                </td>
+                <td className="px-5 py-3 text-right">
+                  <a
+                    href={construirEnlaceNotificacionEstado({
+                      nombreContacto: p.nombreContacto,
+                      telefonoContacto: p.telefonoContacto,
+                      numeroPedido: p.numeroPedido,
+                      estado,
+                    })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Notificar por WhatsApp"
+                    title="Notificar al cliente por WhatsApp"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full text-emerald-600 hover:bg-emerald-500/10"
+                  >
+                    <MessageCircle size={16} />
+                  </a>
                 </td>
               </tr>
             );

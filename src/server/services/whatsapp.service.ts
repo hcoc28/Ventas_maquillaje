@@ -21,6 +21,7 @@ export function construirMensajeWhatsApp(pedido: PedidoResumen): string {
   lineas.push(`*Nombre:* ${pedido.nombreContacto}`);
   lineas.push(`*Teléfono:* ${pedido.telefonoContacto}`);
   lineas.push(`*Dirección:* ${pedido.direccionEntrega}`);
+  lineas.push(`*Método de pago:* ${pedido.metodoPago}`);
   if (pedido.observaciones) {
     lineas.push(`*Observaciones:* ${pedido.observaciones}`);
   }
@@ -33,4 +34,32 @@ export function construirMensajeWhatsApp(pedido: PedidoResumen): string {
 export function construirEnlaceWhatsApp(mensaje: string): string {
   const telefono = siteConfig.whatsappNumero.replace(/\D/g, "");
   return `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+}
+
+const MENSAJES_ESTADO: Record<string, string> = {
+  Confirmado: "confirmamos tu pedido y ya lo estamos preparando",
+  Enviado: "tu pedido ya está en camino",
+  Entregado: "tu pedido fue entregado, ¡gracias por tu compra!",
+  Cancelado: "tu pedido fue cancelado",
+};
+
+/** Enlace para que el admin notifique manualmente al CLIENTE (no al negocio) sobre un cambio de estado. */
+export function construirEnlaceNotificacionEstado(pedido: {
+  nombreContacto: string;
+  telefonoContacto: string;
+  numeroPedido: string;
+  estado: string;
+}): string {
+  let digitos = pedido.telefonoContacto.replace(/\D/g, "");
+  // Números guatemaltecos suelen ingresarse sin el código de país (8 dígitos).
+  if (digitos.length === 8) digitos = `502${digitos}`;
+
+  const detalleEstado = MENSAJES_ESTADO[pedido.estado] ?? `tu pedido cambió de estado a "${pedido.estado}"`;
+  const mensaje = [
+    `Hola ${pedido.nombreContacto}, te escribimos de ${siteConfig.nombreCompleto}.`,
+    `Pedido *${pedido.numeroPedido}*: ${detalleEstado}.`,
+    "Gracias por tu compra.",
+  ].join("\n");
+
+  return `https://wa.me/${digitos}?text=${encodeURIComponent(mensaje)}`;
 }

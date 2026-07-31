@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
 import { Heart, ShoppingBag, Star } from "lucide-react";
 import { formatearMoneda } from "@/lib/utils";
 import { useCart } from "@/components/cart/cart-context";
@@ -14,6 +14,24 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
   const { agregar } = useCart();
   const { esFavorito, alternar } = useFavoritos();
   const favorito = esFavorito(producto.id);
+  const prefiereMenosMovimiento = useReducedMotion();
+
+  const puntoX = useMotionValue(0.5);
+  const puntoY = useMotionValue(0.5);
+  const rotateX = useSpring(useTransform(puntoY, [0, 1], [10, -10]), { stiffness: 300, damping: 25 });
+  const rotateY = useSpring(useTransform(puntoX, [0, 1], [-10, 10]), { stiffness: 300, damping: 25 });
+
+  function onMouseMove(e: React.MouseEvent<HTMLElement>) {
+    if (prefiereMenosMovimiento) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    puntoX.set((e.clientX - rect.left) / rect.width);
+    puntoY.set((e.clientY - rect.top) / rect.height);
+  }
+
+  function onMouseLeave() {
+    puntoX.set(0.5);
+    puntoY.set(0.5);
+  }
 
   return (
     <motion.article
@@ -21,6 +39,9 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, delay: Math.min(index, 6) * 0.05, ease: [0.16, 1, 0.3, 1] }}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      style={{ rotateX, rotateY, transformPerspective: 800 }}
       className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-strong)]"
     >
       <Link href={`/producto/${producto.slug}`} className="relative block aspect-square overflow-hidden bg-surface-muted">

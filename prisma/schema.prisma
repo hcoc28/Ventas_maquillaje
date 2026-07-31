@@ -199,6 +199,7 @@ model Order {
   nombreContacto   String   @map("nombre_contacto") @db.NVarChar(150)
   telefonoContacto String   @map("telefono_contacto") @db.NVarChar(30)
   direccionEntrega String   @map("direccion_entrega") @db.NVarChar(400)
+  metodoPago       String   @default("Efectivo contra entrega") @map("metodo_pago") @db.NVarChar(30)
   observaciones    String?  @db.NVarChar(1000)
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
