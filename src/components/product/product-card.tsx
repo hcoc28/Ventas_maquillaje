@@ -1,8 +1,9 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Heart, ShoppingBag, Star } from "lucide-react";
 import { formatearMoneda } from "@/lib/utils";
 import { useCart } from "@/components/cart/cart-context";
@@ -15,22 +16,21 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
   const { esFavorito, alternar } = useFavoritos();
   const favorito = esFavorito(producto.id);
   const prefiereMenosMovimiento = useReducedMotion();
-
-  const puntoX = useMotionValue(0.5);
-  const puntoY = useMotionValue(0.5);
-  const rotateX = useSpring(useTransform(puntoY, [0, 1], [10, -10]), { stiffness: 300, damping: 25 });
-  const rotateY = useSpring(useTransform(puntoX, [0, 1], [-10, 10]), { stiffness: 300, damping: 25 });
+  const productoRef = useRef<HTMLDivElement>(null);
 
   function onMouseMove(e: React.MouseEvent<HTMLElement>) {
-    if (prefiereMenosMovimiento) return;
+    if (prefiereMenosMovimiento || !productoRef.current) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    puntoX.set((e.clientX - rect.left) / rect.width);
-    puntoY.set((e.clientY - rect.top) / rect.height);
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    productoRef.current.style.setProperty("--rx", `${(0.5 - py) * 14}deg`);
+    productoRef.current.style.setProperty("--ry", `${(px - 0.5) * 14}deg`);
   }
 
   function onMouseLeave() {
-    puntoX.set(0.5);
-    puntoY.set(0.5);
+    if (!productoRef.current) return;
+    productoRef.current.style.setProperty("--rx", "0deg");
+    productoRef.current.style.setProperty("--ry", "0deg");
   }
 
   return (
@@ -38,28 +38,38 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
       initial={{ opacity: 0, y: 32 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
-      whileHover={prefiereMenosMovimiento ? undefined : { y: -6 }}
       transition={{ duration: 0.5, delay: Math.min(index, 6) * 0.05, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-soft)] transition-shadow duration-300 hover:shadow-[0_35px_60px_-20px_rgba(0,0,0,0.35)]"
+      className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface shadow-[var(--shadow-soft)] transition-shadow duration-300 hover:shadow-[var(--shadow-strong)]"
     >
       <Link
         href={`/producto/${producto.slug}`}
         onMouseMove={onMouseMove}
         onMouseLeave={onMouseLeave}
         className="relative block aspect-square overflow-hidden bg-surface-muted"
-        style={{ perspective: 700 }}
+        style={{ perspective: 900 }}
       >
-        {/* Sombra que crece debajo del producto al pasar el mouse, dando sensación de que se eleva del fondo */}
-        <div className="pointer-events-none absolute inset-6 rounded-full bg-black/0 opacity-0 blur-2xl transition-all duration-500 group-hover:bg-black/30 group-hover:opacity-100" />
-        <motion.div style={{ rotateX, rotateY }} className="relative h-full w-full">
+        {/* Fondo: se hunde, se oscurece y se desenfoca al pasar el mouse */}
+        <div className="product-card-backdrop">
+          <Image
+            src={producto.imagenPrincipalUrl}
+            alt=""
+            aria-hidden
+            fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+            className="object-cover"
+          />
+        </div>
+
+        {/* Producto: avanza hacia el cliente, se agranda y proyecta sombra */}
+        <div ref={productoRef} className="product-card-product">
           <Image
             src={producto.imagenPrincipalUrl}
             alt={producto.nombre}
             fill
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-            className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110 group-hover:drop-shadow-[0_18px_16px_rgba(0,0,0,0.3)]"
+            className="object-cover"
           />
-        </motion.div>
+        </div>
       </Link>
 
       <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
