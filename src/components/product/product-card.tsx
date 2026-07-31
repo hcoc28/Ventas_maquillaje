@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart, ShoppingBag, Star } from "lucide-react";
+import { Heart, Minus, Plus, ShoppingBag, Star } from "lucide-react";
 import { formatearMoneda } from "@/lib/utils";
 import { useCart } from "@/components/cart/cart-context";
 import { useFavoritos } from "@/components/favoritos/favoritos-context";
@@ -14,6 +15,14 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
   const { agregar } = useCart();
   const { esFavorito, alternar } = useFavoritos();
   const favorito = esFavorito(producto.id);
+  const [seleccionando, setSeleccionando] = useState(false);
+  const [cantidad, setCantidad] = useState(1);
+
+  async function confirmarAgregar() {
+    await agregar(producto.id, cantidad);
+    setSeleccionando(false);
+    setCantidad(1);
+  }
 
   return (
     <motion.article
@@ -67,13 +76,53 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
       <div className="pointer-events-none absolute inset-x-3 bottom-[-60px] z-10 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:bottom-3">
         <button
           type="button"
-          onClick={() => agregar(producto.id, 1)}
+          onClick={() => setSeleccionando(true)}
           disabled={!producto.hayStock}
           className="pointer-events-auto flex w-full items-center justify-center gap-2 rounded-full bg-black py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
         >
           <ShoppingBag size={14} /> {producto.hayStock ? "Agregar" : "Agotado"}
         </button>
       </div>
+
+      {seleccionando && (
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setSeleccionando(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex w-full flex-col items-center gap-3 rounded-2xl bg-white p-4 shadow-xl"
+          >
+            <span className="line-clamp-2 text-center text-xs font-semibold text-black">{producto.nombre}</span>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setCantidad((c) => Math.max(1, c - 1))}
+                aria-label="Reducir cantidad"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-black/15 text-black hover:bg-black/5"
+              >
+                <Minus size={14} />
+              </button>
+              <span className="w-6 text-center text-sm font-bold text-black">{cantidad}</span>
+              <button
+                type="button"
+                onClick={() => setCantidad((c) => Math.min(20, c + 1))}
+                aria-label="Aumentar cantidad"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-black/15 text-black hover:bg-black/5"
+              >
+                <Plus size={14} />
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={confirmarAgregar}
+              className="w-full rounded-full bg-black py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-accent-strong"
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 flex-col gap-1 p-4">
         <span className="text-[0.7rem] font-semibold uppercase tracking-wider text-accent-strong">{producto.marcaNombre}</span>
