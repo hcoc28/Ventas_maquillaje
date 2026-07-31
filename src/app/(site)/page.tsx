@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Gem, HeartHandshake, ShieldCheck, Truck } from "lucide-react";
 import { Hero } from "@/components/home/hero";
+import { IntroAnimation } from "@/components/home/intro-animation";
 import { CategoryCard } from "@/components/home/category-card";
 import { ProductCard } from "@/components/product/product-card";
 import { NewsletterForm } from "@/components/layout/newsletter-form";
@@ -34,6 +35,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <IntroAnimation />
       <Hero banners={banners} />
 
       <section className="bg-background px-5 py-24 sm:px-8">

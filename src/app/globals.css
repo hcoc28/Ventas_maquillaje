@@ -194,6 +194,31 @@ h1, h2, h3, h4, h5 {
   background: rgba(255, 255, 255, 1);
 }
 
+/* ===== Intro animado de bienvenida ===== */
+.intro-logo-text {
+  display: inline-block;
+  opacity: 0;
+  transform: scale(0.8);
+  filter: blur(6px);
+  text-shadow: 0 0 30px rgba(198, 161, 91, 0.6), 0 0 60px rgba(217, 169, 169, 0.35);
+  animation: intro-logo-reveal 1.4s var(--ease-elegant) 5.4s forwards;
+}
+.intro-logo-sub {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(6px);
+  animation: intro-sub-reveal 1.2s var(--ease-elegant) 6.2s forwards;
+}
+@keyframes intro-logo-reveal {
+  0% { opacity: 0; transform: scale(0.8); filter: blur(6px); }
+  60% { opacity: 1; transform: scale(1.04); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+@keyframes intro-sub-reveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* ===== Tarjeta de producto: la superficie se inclina, el producto avanza en 3D =====
    Estructura mínima a propósito (sin overflow ni filter mezclados con el transform
    3D, sin variables CSS dentro de transform) para máxima compatibilidad. */
