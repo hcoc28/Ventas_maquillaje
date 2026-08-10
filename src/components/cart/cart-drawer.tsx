@@ -206,7 +206,7 @@ export function CartDrawer() {
                 <button onClick={cerrarCheckout} className="mb-4 flex items-center gap-2 text-sm text-text-muted hover:text-foreground">
                   <ArrowLeft size={16} /> Volver al carrito
                 </button>
-                <h4 className="mb-4 text-lg font-semibold">Datos de entrega</h4>
+                <h4 className="mb-4 text-lg font-semibold">Datos de contacto</h4>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
                   <Campo label="Nombre completo *" error={errors.nombreContacto?.message}>
@@ -214,9 +214,6 @@ export function CartDrawer() {
                   </Campo>
                   <Campo label="Teléfono (WhatsApp) *" error={errors.telefonoContacto?.message}>
                     <input {...register("telefonoContacto")} type="tel" className={inputClass} />
-                  </Campo>
-                  <Campo label="Dirección de entrega *" error={errors.direccionEntrega?.message}>
-                    <textarea {...register("direccionEntrega")} className={inputClass} rows={3} />
                   </Campo>
                   <Campo label="Método de pago *" error={errors.metodoPago?.message}>
                     <select {...register("metodoPago")} className={inputClass} defaultValue="">
@@ -230,11 +227,13 @@ export function CartDrawer() {
                       ))}
                     </select>
                   </Campo>
-                  <Campo label="Correo electrónico" error={errors.email?.message}>
-                    <input {...register("email")} type="email" className={inputClass} />
-                  </Campo>
                   <Campo label="Observaciones" error={errors.observaciones?.message}>
-                    <textarea {...register("observaciones")} className={inputClass} rows={2} />
+                    <textarea
+                      {...register("observaciones")}
+                      className={inputClass}
+                      rows={2}
+                      placeholder="Ej. punto de encuentro preferido, horario, etc."
+                    />
                   </Campo>
 
                   <button

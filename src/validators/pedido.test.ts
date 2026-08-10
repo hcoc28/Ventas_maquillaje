@@ -27,12 +27,11 @@ describe("crearPedidoSchema", () => {
   const base = {
     nombreContacto: "María González",
     telefonoContacto: "50255511122",
-    direccionEntrega: "Zona 10, Ciudad de Guatemala",
     metodoPago: "Efectivo contra entrega",
     items: [{ productoId: 1, cantidad: 2 }],
   };
 
-  it("acepta un pedido válido sin correo ni cupón", () => {
+  it("acepta un pedido válido sin cupón", () => {
     expect(crearPedidoSchema.safeParse(base).success).toBe(true);
   });
 
@@ -48,11 +47,6 @@ describe("crearPedidoSchema", () => {
 
   it("rechaza nombre de contacto muy corto", () => {
     const resultado = crearPedidoSchema.safeParse({ ...base, nombreContacto: "Al" });
-    expect(resultado.success).toBe(false);
-  });
-
-  it("rechaza correo con formato inválido cuando se proporciona", () => {
-    const resultado = crearPedidoSchema.safeParse({ ...base, email: "no-es-correo" });
     expect(resultado.success).toBe(false);
   });
 

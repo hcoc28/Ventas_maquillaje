@@ -29,10 +29,8 @@ export interface Carrito {
 export interface CrearPedidoInput {
   nombreContacto: string;
   telefonoContacto: string;
-  direccionEntrega: string;
   metodoPago: string;
   observaciones?: string;
-  email?: string;
   items: CarritoItemInput[];
   codigoCupon?: string;
 }
@@ -55,7 +53,6 @@ export interface PedidoResumen {
   total: number;
   nombreContacto: string;
   telefonoContacto: string;
-  direccionEntrega: string;
   metodoPago: string;
   observaciones: string | null;
   detalles: PedidoDetalleDto[];

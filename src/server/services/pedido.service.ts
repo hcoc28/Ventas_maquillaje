@@ -6,67 +6,15 @@ import { calcularCarrito } from "@/server/services/carrito.service";
 import { registrarUsoCupon } from "@/server/services/cupon.service";
 import { construirEnlaceWhatsApp, construirMensajeWhatsApp } from "@/server/services/whatsapp.service";
 import { registrarActividad } from "@/server/services/log.service";
-import { enviarEmail, plantillaBase } from "@/server/services/email.service";
-import { formatearMoneda } from "@/lib/utils";
 import { METODOS_PAGO } from "@/validators/pedido";
 import type { CrearPedidoInput, PedidoResumen, Resultado } from "@/types/carrito";
-
-async function enviarConfirmacionPedido(email: string, resumen: PedidoResumen): Promise<void> {
-  const filasProductos = resumen.detalles
-    .map(
-      (d) => `
-        <tr>
-          <td style="padding: 8px 0; font-size: 13px; color: #333;">${d.nombreProducto} × ${d.cantidad}</td>
-          <td style="padding: 8px 0; font-size: 13px; color: #333; text-align: right;">${formatearMoneda(d.subtotal)}</td>
-        </tr>`
-    )
-    .join("");
-
-  await enviarEmail({
-    to: email,
-    subject: `Confirmación de tu pedido ${resumen.numeroPedido}`,
-    html: plantillaBase(`
-      <h1 style="font-size: 18px; margin-bottom: 12px;">¡Gracias por tu pedido!</h1>
-      <p style="font-size: 14px; line-height: 1.6; color: #333;">
-        Recibimos tu pedido <strong>${resumen.numeroPedido}</strong>. Te contactaremos por WhatsApp para coordinar la entrega.
-      </p>
-      <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-        ${filasProductos}
-        <tr>
-          <td style="padding: 8px 0 0; font-size: 13px; color: #666; border-top: 1px solid #eee;">Subtotal</td>
-          <td style="padding: 8px 0 0; font-size: 13px; color: #666; text-align: right; border-top: 1px solid #eee;">${formatearMoneda(resumen.subtotal)}</td>
-        </tr>
-        ${
-          resumen.descuento > 0
-            ? `<tr>
-                <td style="padding: 4px 0; font-size: 13px; color: #16a34a;">Descuento${resumen.cuponCodigo ? ` (${resumen.cuponCodigo})` : ""}</td>
-                <td style="padding: 4px 0; font-size: 13px; color: #16a34a; text-align: right;">-${formatearMoneda(resumen.descuento)}</td>
-              </tr>`
-            : ""
-        }
-        <tr>
-          <td style="padding: 8px 0 0; font-size: 14px; font-weight: 600;">Total</td>
-          <td style="padding: 8px 0 0; font-size: 14px; font-weight: 600; text-align: right;">${formatearMoneda(resumen.total)}</td>
-        </tr>
-      </table>
-      <p style="font-size: 13px; color: #666;"><strong>Entrega:</strong> ${resumen.direccionEntrega}</p>
-      <p style="font-size: 13px; color: #666;"><strong>Método de pago:</strong> ${resumen.metodoPago}</p>
-    `),
-  });
-}
 
 async function obtenerOCrearUsuarioParaPedido(input: CrearPedidoInput, userId: number | null): Promise<number> {
   if (userId) return userId;
 
-  // Nunca adjuntamos un pedido anónimo a una cuenta existente solo porque alguien escribió su
-  // correo — sin contraseña ni verificación, cualquiera podría "regalarle" pedidos falsos a otra
-  // persona. Si el correo ya está registrado, generamos uno de invitado sintético en su lugar.
-  const emailIngresado = input.email?.trim();
-  const correoOcupado = emailIngresado ? await usuarioRepo.getUsuarioPorEmail(emailIngresado) : null;
-  const email =
-    emailIngresado && !correoOcupado
-      ? emailIngresado
-      : `invitado.${Date.now()}.${Math.random().toString(36).slice(2, 8)}@amourbloom.com`;
+  // Cada pedido de invitado (sin cuenta) recibe un usuario sintético propio — nunca lo adjuntamos
+  // a una cuenta existente, ya que no hay forma de verificar identidad en este flujo.
+  const email = `invitado.${Date.now()}.${Math.random().toString(36).slice(2, 8)}@amourbloom.com`;
 
   const partes = input.nombreContacto.trim().split(" ");
   const passwordHash = await bcrypt.hash(`invitado-${Date.now()}-${Math.random()}`, 10);
@@ -94,7 +42,6 @@ function mapearPedido(pedido: {
   total: unknown;
   nombreContacto: string;
   telefonoContacto: string;
-  direccionEntrega: string;
   metodoPago: string;
   observaciones: string | null;
   details: { nombreProducto: string; cantidad: number; precioUnitario: unknown }[];
@@ -110,7 +57,6 @@ function mapearPedido(pedido: {
     total: Number(pedido.total),
     nombreContacto: pedido.nombreContacto,
     telefonoContacto: pedido.telefonoContacto,
-    direccionEntrega: pedido.direccionEntrega,
     metodoPago: pedido.metodoPago,
     observaciones: pedido.observaciones,
     detalles: pedido.details.map((d) => ({
@@ -123,8 +69,8 @@ function mapearPedido(pedido: {
 }
 
 export async function crearPedido(input: CrearPedidoInput, userId: number | null): Promise<Resultado<PedidoResumen>> {
-  if (!input.nombreContacto?.trim() || !input.telefonoContacto?.trim() || !input.direccionEntrega?.trim()) {
-    return { exitoso: false, errores: ["Nombre, teléfono y dirección de entrega son obligatorios."] };
+  if (!input.nombreContacto?.trim() || !input.telefonoContacto?.trim()) {
+    return { exitoso: false, errores: ["Nombre y teléfono son obligatorios."] };
   }
   if (!METODOS_PAGO.includes(input.metodoPago as (typeof METODOS_PAGO)[number])) {
     return { exitoso: false, errores: ["Selecciona un método de pago válido."] };
@@ -152,7 +98,6 @@ export async function crearPedido(input: CrearPedidoInput, userId: number | null
         total: carrito.total,
         nombreContacto: input.nombreContacto,
         telefonoContacto: input.telefonoContacto,
-        direccionEntrega: input.direccionEntrega,
         metodoPago: input.metodoPago,
         observaciones: input.observaciones || null,
         details: {
@@ -186,10 +131,6 @@ export async function crearPedido(input: CrearPedidoInput, userId: number | null
   const enlaceWhatsApp = construirEnlaceWhatsApp(mensajeWhatsApp);
 
   await registrarActividad(usuarioId, "Pedido creado", `${resumen.numeroPedido} · Q${resumen.total}`);
-
-  if (input.email?.trim()) {
-    await enviarConfirmacionPedido(input.email.trim(), resumen);
-  }
 
   return { exitoso: true, valor: { ...resumen, mensajeWhatsApp, enlaceWhatsApp } };
 }

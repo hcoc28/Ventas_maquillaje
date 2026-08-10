@@ -10,10 +10,8 @@ export const carritoItemInputSchema = z.object({
 export const crearPedidoSchema = z.object({
   nombreContacto: z.string().trim().min(3, "El nombre es obligatorio.").max(150),
   telefonoContacto: z.string().trim().min(8, "Ingresa un teléfono válido.").max(30),
-  direccionEntrega: z.string().trim().min(5, "La dirección es obligatoria.").max(400),
   metodoPago: z.enum(METODOS_PAGO, { message: "Selecciona un método de pago." }),
   observaciones: z.string().trim().max(1000).optional().or(z.literal("")),
-  email: z.string().email().optional().or(z.literal("")),
   items: z.array(carritoItemInputSchema).min(1, "El carrito está vacío."),
   codigoCupon: z.string().trim().max(30).optional().or(z.literal("")),
 });

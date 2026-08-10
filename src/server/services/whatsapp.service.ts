@@ -20,7 +20,6 @@ export function construirMensajeWhatsApp(pedido: PedidoResumen): string {
   lineas.push("");
   lineas.push(`*Nombre:* ${pedido.nombreContacto}`);
   lineas.push(`*Teléfono:* ${pedido.telefonoContacto}`);
-  lineas.push(`*Dirección:* ${pedido.direccionEntrega}`);
   lineas.push(`*Método de pago:* ${pedido.metodoPago}`);
   if (pedido.observaciones) {
     lineas.push(`*Observaciones:* ${pedido.observaciones}`);
