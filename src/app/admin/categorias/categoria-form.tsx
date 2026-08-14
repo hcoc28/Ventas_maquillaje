@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -20,7 +20,7 @@ export function CategoriaForm({ categoriaId, valoresIniciales }: { categoriaId?:
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<CategoriaAdminInput>({
     resolver: zodResolver(categoriaAdminSchema),
@@ -34,6 +34,9 @@ export function CategoriaForm({ categoriaId, valoresIniciales }: { categoriaId?:
       activo: true,
     },
   });
+
+  const imagenUrl = useWatch({ control, name: "imagenUrl" });
+  const activo = useWatch({ control, name: "activo" });
 
   async function onSubmit(data: CategoriaAdminInput) {
     setErrorGeneral(null);
@@ -78,7 +81,7 @@ export function CategoriaForm({ categoriaId, valoresIniciales }: { categoriaId?:
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Campo label="Imagen" error={errors.imagenUrl?.message}>
-          <ImagenInput value={watch("imagenUrl") ?? ""} onChange={(url) => setValue("imagenUrl", url, { shouldValidate: true })} />
+          <ImagenInput value={imagenUrl ?? ""} onChange={(url) => setValue("imagenUrl", url, { shouldValidate: true })} />
         </Campo>
         <Campo label="Ícono (nombre lucide)" error={errors.icono?.message}>
           <input {...register("icono")} className={inputClass} />
@@ -90,7 +93,7 @@ export function CategoriaForm({ categoriaId, valoresIniciales }: { categoriaId?:
           <input type="number" {...register("orden", { valueAsNumber: true })} className={inputClass} />
         </Campo>
         <label className="flex items-center gap-2.5 self-end pb-2.5 text-sm font-semibold">
-          <input type="checkbox" checked={watch("activo")} onChange={(e) => setValue("activo", e.target.checked)} className="h-4 w-4" />
+          <input type="checkbox" checked={activo} onChange={(e) => setValue("activo", e.target.checked)} className="h-4 w-4" />
           Categoría activa
         </label>
       </div>

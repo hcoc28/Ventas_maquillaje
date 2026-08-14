@@ -67,7 +67,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     // localStorage no existe durante el render de servidor; se hidrata una sola vez al montar.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setItems(leerItemsLocales());
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHidratado(true);
   }, []);
 
@@ -93,8 +92,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!hidratado) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
+    // Solo debe recalcular una vez al hidratar; items/recalcular se omiten a propósito para no
+    // repetir la llamada en cada cambio (agregar/actualizar/eliminar ya llaman a recalcular directo).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     recalcular(items);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hidratado]);
 
   const actualizarItems = useCallback(

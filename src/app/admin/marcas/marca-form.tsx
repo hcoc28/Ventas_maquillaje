@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -20,12 +20,15 @@ export function MarcaForm({ marcaId, valoresIniciales }: { marcaId?: number; val
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<MarcaAdminInput>({
     resolver: zodResolver(marcaAdminSchema),
     defaultValues: valoresIniciales ?? { nombre: "", slug: "", descripcion: "", logoUrl: "", activo: true },
   });
+
+  const logoUrl = useWatch({ control, name: "logoUrl" });
+  const activo = useWatch({ control, name: "activo" });
 
   async function onSubmit(data: MarcaAdminInput) {
     setErrorGeneral(null);
@@ -69,11 +72,11 @@ export function MarcaForm({ marcaId, valoresIniciales }: { marcaId?: number; val
       </Campo>
 
       <Campo label="Logo" error={errors.logoUrl?.message}>
-        <ImagenInput value={watch("logoUrl") ?? ""} onChange={(url) => setValue("logoUrl", url, { shouldValidate: true })} />
+        <ImagenInput value={logoUrl ?? ""} onChange={(url) => setValue("logoUrl", url, { shouldValidate: true })} />
       </Campo>
 
       <label className="flex items-center gap-2.5 text-sm font-semibold">
-        <input type="checkbox" checked={watch("activo")} onChange={(e) => setValue("activo", e.target.checked)} className="h-4 w-4" />
+        <input type="checkbox" checked={activo} onChange={(e) => setValue("activo", e.target.checked)} className="h-4 w-4" />
         Marca activa
       </label>
 

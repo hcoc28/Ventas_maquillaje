@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -36,7 +36,6 @@ export function ProductoForm({
     handleSubmit,
     control,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProductoAdminInput>({
     resolver: zodResolver(productoAdminSchema),
@@ -62,6 +61,12 @@ export function ProductoForm({
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: "imagenes" });
+
+  const promotionId = useWatch({ control, name: "promotionId" });
+  const esNuevo = useWatch({ control, name: "esNuevo" });
+  const esEdicionLimitada = useWatch({ control, name: "esEdicionLimitada" });
+  const activo = useWatch({ control, name: "activo" });
+  const imagenesWatch = useWatch({ control, name: "imagenes" });
 
   async function onSubmit(data: ProductoAdminInput) {
     setErrorGeneral(null);
@@ -146,7 +151,7 @@ export function ProductoForm({
         </Campo>
         <Campo label="Promoción (opcional)" error={errors.promotionId?.message}>
           <select
-            value={watch("promotionId") ?? ""}
+            value={promotionId ?? ""}
             onChange={(e) => setValue("promotionId", e.target.value ? Number(e.target.value) : null)}
             className={inputClass}
           >
@@ -174,20 +179,20 @@ export function ProductoForm({
 
       <div className="flex flex-wrap gap-5">
         <label className="flex items-center gap-2.5 text-sm font-semibold">
-          <input type="checkbox" checked={watch("esNuevo")} onChange={(e) => setValue("esNuevo", e.target.checked)} className="h-4 w-4" />
+          <input type="checkbox" checked={esNuevo} onChange={(e) => setValue("esNuevo", e.target.checked)} className="h-4 w-4" />
           Nuevo
         </label>
         <label className="flex items-center gap-2.5 text-sm font-semibold">
           <input
             type="checkbox"
-            checked={watch("esEdicionLimitada")}
+            checked={esEdicionLimitada}
             onChange={(e) => setValue("esEdicionLimitada", e.target.checked)}
             className="h-4 w-4"
           />
           Edición limitada
         </label>
         <label className="flex items-center gap-2.5 text-sm font-semibold">
-          <input type="checkbox" checked={watch("activo")} onChange={(e) => setValue("activo", e.target.checked)} className="h-4 w-4" />
+          <input type="checkbox" checked={activo} onChange={(e) => setValue("activo", e.target.checked)} className="h-4 w-4" />
           Activo
         </label>
       </div>
@@ -209,7 +214,7 @@ export function ProductoForm({
           <div key={field.id} className="grid grid-cols-1 items-start gap-3 rounded-xl bg-surface-muted p-3 sm:grid-cols-[1fr_1fr_auto_auto]">
             <Campo label="Imagen" error={errors.imagenes?.[index]?.url?.message}>
               <ImagenInput
-                value={watch(`imagenes.${index}.url`) ?? ""}
+                value={imagenesWatch?.[index]?.url ?? ""}
                 onChange={(url) => setValue(`imagenes.${index}.url`, url, { shouldValidate: true })}
               />
             </Campo>
@@ -221,10 +226,10 @@ export function ProductoForm({
               onClick={() => marcarPrincipal(index)}
               title="Marcar como principal"
               className={`mt-6 flex h-10 w-10 items-center justify-center rounded-lg border ${
-                watch(`imagenes.${index}.esPrincipal`) ? "border-accent-strong bg-accent-strong text-white" : "border-border"
+                imagenesWatch?.[index]?.esPrincipal ? "border-accent-strong bg-accent-strong text-white" : "border-border"
               }`}
             >
-              <Star size={16} fill={watch(`imagenes.${index}.esPrincipal`) ? "currentColor" : "none"} />
+              <Star size={16} fill={imagenesWatch?.[index]?.esPrincipal ? "currentColor" : "none"} />
             </button>
             <button
               type="button"

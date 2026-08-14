@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -18,7 +18,7 @@ export function CuponForm({ cuponId, valoresIniciales }: { cuponId?: number; val
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<CuponAdminInput>({
     resolver: zodResolver(cuponAdminSchema),
@@ -31,6 +31,8 @@ export function CuponForm({ cuponId, valoresIniciales }: { cuponId?: number; val
       activo: true,
     },
   });
+
+  const activo = useWatch({ control, name: "activo" });
 
   async function onSubmit(data: CuponAdminInput) {
     setErrorGeneral(null);
@@ -86,7 +88,7 @@ export function CuponForm({ cuponId, valoresIniciales }: { cuponId?: number; val
       </Campo>
 
       <label className="flex items-center gap-2.5 text-sm font-semibold">
-        <input type="checkbox" checked={watch("activo")} onChange={(e) => setValue("activo", e.target.checked)} className="h-4 w-4" />
+        <input type="checkbox" checked={activo} onChange={(e) => setValue("activo", e.target.checked)} className="h-4 w-4" />
         Cupón activo
       </label>
 
