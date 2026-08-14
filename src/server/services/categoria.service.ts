@@ -19,8 +19,8 @@ export async function getCategoriasActivas(): Promise<CategoriaDto[]> {
   }));
 }
 
-export async function getTodasLasCategoriasAdmin() {
-  return categoriaRepo.getTodasLasCategorias();
+export async function getTodasLasCategoriasAdmin(soloActivas?: boolean) {
+  return categoriaRepo.getTodasLasCategorias(soloActivas);
 }
 
 export async function getCategoriaPorId(id: number) {

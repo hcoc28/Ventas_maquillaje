@@ -3,8 +3,14 @@ import { Plus } from "lucide-react";
 import { getTodasLasCategoriasAdmin } from "@/server/services/categoria.service";
 import { CategoriasTable } from "./categorias-table";
 
-export default async function AdminCategoriasPage() {
-  const categorias = await getTodasLasCategoriasAdmin();
+interface Props {
+  searchParams: Promise<{ todos?: string }>;
+}
+
+export default async function AdminCategoriasPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const mostrarTodos = params.todos === "1";
+  const categorias = await getTodasLasCategoriasAdmin(!mostrarTodos);
 
   return (
     <div className="flex flex-col gap-6">
@@ -21,7 +27,7 @@ export default async function AdminCategoriasPage() {
         </Link>
       </div>
 
-      <CategoriasTable categorias={categorias} />
+      <CategoriasTable categorias={categorias} mostrarTodosInicial={mostrarTodos} />
     </div>
   );
 }

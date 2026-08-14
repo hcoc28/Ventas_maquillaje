@@ -8,14 +8,10 @@ import type { getTodosLosUsuariosAdmin } from "@/server/services/usuario.service
 
 type Usuario = Awaited<ReturnType<typeof getTodosLosUsuariosAdmin>>[number];
 
-const ROLES = ["Administrador", "Empleado", "Cliente"] as const;
-
 export function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
   const { data: session } = useSession();
   const { mostrar } = useToast();
-  const [estado, setEstado] = useState(
-    new Map(usuarios.map((u) => [u.id, { roleNombre: u.role.nombre, activo: u.activo }]))
-  );
+  const [estado, setEstado] = useState(new Map(usuarios.map((u) => [u.id, { activo: u.activo }])));
   const [guardando, setGuardando] = useState<number | null>(null);
 
   async function guardar(userId: number) {
@@ -32,11 +28,10 @@ export function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
     }
   }
 
-  function actualizar(userId: number, cambios: Partial<{ roleNombre: string; activo: boolean }>) {
+  function actualizar(userId: number, activo: boolean) {
     setEstado((prev) => {
       const nuevo = new Map(prev);
-      const actual = nuevo.get(userId)!;
-      nuevo.set(userId, { ...actual, ...cambios });
+      nuevo.set(userId, { activo });
       return nuevo;
     });
   }
@@ -58,7 +53,7 @@ export function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
           {usuarios.map((u) => {
             const datos = estado.get(u.id)!;
             const esUsuarioActual = session?.user?.email === u.email;
-            const cambiado = datos.roleNombre !== u.role.nombre || datos.activo !== u.activo;
+            const cambiado = datos.activo !== u.activo;
             return (
               <tr key={u.id}>
                 <td className="px-5 py-3 font-medium">
@@ -67,25 +62,16 @@ export function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
                 <td className="px-5 py-3 text-text-muted">{u.email}</td>
                 <td className="px-5 py-3">{u._count.orders}</td>
                 <td className="px-5 py-3">
-                  <select
-                    value={datos.roleNombre}
-                    onChange={(e) => actualizar(u.id, { roleNombre: e.target.value })}
-                    disabled={esUsuarioActual}
-                    className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-accent-strong disabled:opacity-50"
-                  >
-                    {ROLES.map((r) => (
-                      <option key={r} value={r}>
-                        {r}
-                      </option>
-                    ))}
-                  </select>
+                  <span className="rounded-full bg-surface-muted px-2.5 py-1 text-xs font-semibold text-text-muted">
+                    {u.role.nombre}
+                  </span>
                 </td>
                 <td className="px-5 py-3">
                   <input
                     type="checkbox"
                     checked={datos.activo}
                     disabled={esUsuarioActual}
-                    onChange={(e) => actualizar(u.id, { activo: e.target.checked })}
+                    onChange={(e) => actualizar(u.id, e.target.checked)}
                     className="h-4 w-4"
                   />
                 </td>

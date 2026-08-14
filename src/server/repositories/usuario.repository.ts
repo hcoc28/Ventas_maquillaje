@@ -53,9 +53,8 @@ export async function getTodosLosUsuarios() {
   });
 }
 
-export async function actualizarRolYEstado(userId: number, data: { roleNombre: string; activo: boolean }) {
-  const role = await prisma.role.findUniqueOrThrow({ where: { nombre: data.roleNombre } });
-  return prisma.user.update({ where: { id: userId }, data: { roleId: role.id, activo: data.activo } });
+export async function actualizarEstadoUsuario(userId: number, activo: boolean) {
+  return prisma.user.update({ where: { id: userId }, data: { activo } });
 }
 
 export async function actualizarPassword(userId: number, passwordHash: string) {

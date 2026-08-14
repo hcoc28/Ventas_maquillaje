@@ -18,8 +18,9 @@ export async function getConteoProductosPorCategoria(): Promise<Map<number, numb
   return new Map(grupos.map((g) => [g.categoryId, g._count._all]));
 }
 
-export async function getTodasLasCategorias() {
+export async function getTodasLasCategorias(soloActivas?: boolean) {
   return prisma.category.findMany({
+    where: soloActivas ? { activo: true } : undefined,
     orderBy: { orden: "asc" },
     include: { _count: { select: { products: true } } },
   });

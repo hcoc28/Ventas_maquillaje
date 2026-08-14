@@ -18,8 +18,9 @@ export async function getConteoProductosPorMarca(): Promise<Map<number, number>>
   return new Map(grupos.map((g) => [g.brandId, g._count._all]));
 }
 
-export async function getTodasLasMarcas() {
+export async function getTodasLasMarcas(soloActivas?: boolean) {
   return prisma.brand.findMany({
+    where: soloActivas ? { activo: true } : undefined,
     orderBy: { nombre: "asc" },
     include: { _count: { select: { products: true } } },
   });

@@ -10,10 +10,16 @@ import type { getTodasLasCategoriasAdmin } from "@/server/services/categoria.ser
 
 type Categoria = Awaited<ReturnType<typeof getTodasLasCategoriasAdmin>>[number];
 
-export function CategoriasTable({ categorias }: { categorias: Categoria[] }) {
+export function CategoriasTable({ categorias, mostrarTodosInicial }: { categorias: Categoria[]; mostrarTodosInicial: boolean }) {
   const router = useRouter();
   const { mostrar } = useToast();
   const [eliminando, setEliminando] = useState<number | null>(null);
+
+  function alternarMostrarTodos(mostrarTodos: boolean) {
+    const params = new URLSearchParams();
+    if (mostrarTodos) params.set("todos", "1");
+    router.push(`/admin/categorias?${params.toString()}`);
+  }
 
   async function eliminar(id: number, nombre: string) {
     if (!confirm(`¿Desactivar la categoría "${nombre}"?`)) return;
@@ -30,7 +36,18 @@ export function CategoriasTable({ categorias }: { categorias: Categoria[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
+    <div className="flex flex-col gap-4">
+      <label className="flex items-center gap-2 text-sm text-text-muted">
+        <input
+          type="checkbox"
+          checked={mostrarTodosInicial}
+          onChange={(e) => alternarMostrarTodos(e.target.checked)}
+          className="h-4 w-4"
+        />
+        Mostrar inactivas
+      </label>
+
+      <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
       <table className="w-full min-w-[640px] text-left text-sm">
         <thead className="border-b border-border text-xs uppercase tracking-wider text-text-muted">
           <tr>
@@ -82,7 +99,8 @@ export function CategoriasTable({ categorias }: { categorias: Categoria[] }) {
           ))}
         </tbody>
       </table>
-      {categorias.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No hay categorías registradas.</p>}
+        {categorias.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No hay categorías registradas.</p>}
+      </div>
     </div>
   );
 }

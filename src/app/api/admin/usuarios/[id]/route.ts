@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { usuarioAdminSchema } from "@/validators/admin";
-import { actualizarRolYEstado } from "@/server/services/usuario.service";
+import { actualizarEstadoUsuario } from "@/server/services/usuario.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -14,19 +14,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   const session = await auth();
 
-  // Cambiar el rol de un usuario (incluido otorgar el rol de Administrador) es una acción de
-  // más privilegio que el resto del panel — el middleware solo exige "Administrador o Empleado"
-  // para entrar a /admin, así que sin este chequeo cualquier Empleado podría ascender a otra
-  // cuenta (o una nueva registrada por él mismo) a Administrador.
+  // El rol se asigna solo al crear la cuenta y nunca se puede reasignar después — evita que
+  // cualquier cuenta (incluida una registrada por sí misma) termine escalando privilegios.
+  // Activar/desactivar cuentas sigue restringido a Administrador.
   if (session?.user?.role !== "Administrador") {
-    return NextResponse.json({ mensaje: "Solo un Administrador puede modificar roles de usuario." }, { status: 403 });
+    return NextResponse.json({ mensaje: "Solo un Administrador puede modificar usuarios." }, { status: 403 });
   }
 
   if (session?.user?.id && Number(session.user.id) === Number(id)) {
     return NextResponse.json({ mensaje: "No puedes modificar tu propia cuenta desde aquí." }, { status: 400 });
   }
 
-  const usuario = await actualizarRolYEstado(Number(id), parsed.data);
+  const usuario = await actualizarEstadoUsuario(Number(id), parsed.data.activo);
 
   await registrarAuditoria({
     entidad: "Usuario",

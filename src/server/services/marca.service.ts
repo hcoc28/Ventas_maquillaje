@@ -18,8 +18,8 @@ export async function getMarcasActivas(): Promise<MarcaDto[]> {
   }));
 }
 
-export async function getTodasLasMarcasAdmin() {
-  return marcaRepo.getTodasLasMarcas();
+export async function getTodasLasMarcasAdmin(soloActivas?: boolean) {
+  return marcaRepo.getTodasLasMarcas(soloActivas);
 }
 
 export async function getMarcaPorId(id: number) {

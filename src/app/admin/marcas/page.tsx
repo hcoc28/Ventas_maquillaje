@@ -3,8 +3,14 @@ import { Plus } from "lucide-react";
 import { getTodasLasMarcasAdmin } from "@/server/services/marca.service";
 import { MarcasTable } from "./marcas-table";
 
-export default async function AdminMarcasPage() {
-  const marcas = await getTodasLasMarcasAdmin();
+interface Props {
+  searchParams: Promise<{ todos?: string }>;
+}
+
+export default async function AdminMarcasPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const mostrarTodos = params.todos === "1";
+  const marcas = await getTodasLasMarcasAdmin(!mostrarTodos);
 
   return (
     <div className="flex flex-col gap-6">
@@ -21,7 +27,7 @@ export default async function AdminMarcasPage() {
         </Link>
       </div>
 
-      <MarcasTable marcas={marcas} />
+      <MarcasTable marcas={marcas} mostrarTodosInicial={mostrarTodos} />
     </div>
   );
 }

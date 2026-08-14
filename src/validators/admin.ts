@@ -106,7 +106,6 @@ export const pedidoEstadoAdminSchema = z.object({
 });
 
 export const usuarioAdminSchema = z.object({
-  roleNombre: z.enum(["Administrador", "Empleado", "Cliente"]),
   activo: z.boolean(),
 });
 

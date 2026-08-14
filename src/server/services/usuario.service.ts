@@ -95,8 +95,8 @@ export async function getTodosLosUsuariosAdmin() {
   return usuarioRepo.getTodosLosUsuarios();
 }
 
-export async function actualizarRolYEstado(userId: number, data: { roleNombre: string; activo: boolean }) {
-  return usuarioRepo.actualizarRolYEstado(userId, data);
+export async function actualizarEstadoUsuario(userId: number, activo: boolean) {
+  return usuarioRepo.actualizarEstadoUsuario(userId, activo);
 }
 
 export async function solicitarRecuperacionPassword(email: string): Promise<void> {
