@@ -6,6 +6,9 @@ import * as usuarioRepo from "@/server/repositories/usuario.repository";
 import { calcularCarrito } from "@/server/services/carrito.service";
 import { construirEnlaceWhatsApp, construirMensajeWhatsApp } from "@/server/services/whatsapp.service";
 import { registrarActividad } from "@/server/services/log.service";
+import { enviarEmail, plantillaBase } from "@/server/services/email.service";
+import { siteConfig } from "@/config/site";
+import { formatearMoneda } from "@/lib/utils";
 import { METODOS_PAGO } from "@/validators/pedido";
 import type { CrearPedidoInput, PedidoResumen, Resultado } from "@/types/carrito";
 
@@ -86,6 +89,64 @@ function mapearPedido(pedido: {
       subtotal: Math.round(Number(d.precioUnitario) * d.cantidad * 100) / 100,
     })),
   };
+}
+
+function detalleProductosHtml(resumen: PedidoResumen): string {
+  const filas = resumen.detalles
+    .map(
+      (d) =>
+        `<tr><td style="padding: 4px 0;">${d.nombreProducto} x${d.cantidad}</td><td style="padding: 4px 0; text-align: right;">${formatearMoneda(d.subtotal)}</td></tr>`
+    )
+    .join("");
+  return `
+    <table style="width: 100%; font-size: 14px; border-collapse: collapse; margin: 16px 0;">${filas}</table>
+    <p style="font-size: 14px; margin: 4px 0;"><strong>Total:</strong> ${formatearMoneda(resumen.total)}</p>
+    <p style="font-size: 13px; color: #555; margin: 4px 0;">Método de pago: ${resumen.metodoPago}</p>
+  `;
+}
+
+/**
+ * Notificaciones por correo del pedido (nunca deben interrumpir la respuesta al cliente: el
+ * pedido ya quedó creado, así que cualquier falla de envío solo se registra en consola).
+ */
+async function enviarNotificacionesPedido(resumen: PedidoResumen, usuarioId: number, esInvitado: boolean): Promise<void> {
+  if (siteConfig.emailNotificaciones) {
+    try {
+      await enviarEmail({
+        to: siteConfig.emailNotificaciones,
+        subject: `Nuevo pedido ${resumen.numeroPedido}`,
+        html: plantillaBase(`
+          <h1 style="font-size: 18px; margin-bottom: 12px;">Nuevo pedido recibido</h1>
+          <p style="font-size: 14px; margin: 4px 0;">Pedido <strong>${resumen.numeroPedido}</strong></p>
+          <p style="font-size: 13px; color: #555; margin: 4px 0;">Cliente: ${resumen.nombreContacto} · ${resumen.telefonoContacto}</p>
+          ${detalleProductosHtml(resumen)}
+        `),
+      });
+    } catch (error) {
+      console.error("[pedido] Error al enviar notificación interna:", error);
+    }
+  }
+
+  if (!esInvitado) {
+    try {
+      const usuario = await usuarioRepo.getUsuarioPorId(usuarioId);
+      if (usuario?.email) {
+        await enviarEmail({
+          to: usuario.email,
+          subject: `Confirmación de tu pedido ${resumen.numeroPedido}`,
+          html: plantillaBase(`
+            <h1 style="font-size: 18px; margin-bottom: 12px;">¡Gracias por tu compra, ${resumen.nombreContacto}!</h1>
+            <p style="font-size: 14px; line-height: 1.6; color: #333;">
+              Recibimos tu pedido y lo estamos preparando. Te contactaremos por WhatsApp para coordinar el pago y la entrega.
+            </p>
+            ${detalleProductosHtml(resumen)}
+          `),
+        });
+      }
+    } catch (error) {
+      console.error("[pedido] Error al enviar confirmación al cliente:", error);
+    }
+  }
 }
 
 export async function crearPedido(input: CrearPedidoInput, userId: number | null): Promise<Resultado<PedidoResumen>> {
@@ -190,13 +251,18 @@ export async function crearPedido(input: CrearPedidoInput, userId: number | null
   const enlaceWhatsApp = construirEnlaceWhatsApp(mensajeWhatsApp);
 
   await registrarActividad(usuarioId, "Pedido creado", `${resumen.numeroPedido} · Q${resumen.total}`);
+  await enviarNotificacionesPedido(resumen, usuarioId, !userId);
 
   return { exitoso: true, valor: { ...resumen, mensajeWhatsApp, enlaceWhatsApp } };
 }
 
 export async function getPedidosPorUsuario(userId: number): Promise<PedidoResumen[]> {
   const pedidos = await pedidoRepo.getPedidosPorUsuario(userId);
-  return pedidos.map(mapearPedido);
+  return pedidos.map((p) => {
+    const resumen = mapearPedido(p);
+    const mensajeWhatsApp = construirMensajeWhatsApp(resumen);
+    return { ...resumen, mensajeWhatsApp, enlaceWhatsApp: construirEnlaceWhatsApp(mensajeWhatsApp) };
+  });
 }
 
 export async function getTodosLosPedidosAdmin() {

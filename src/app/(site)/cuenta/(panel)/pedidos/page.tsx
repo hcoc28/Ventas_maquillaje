@@ -1,4 +1,4 @@
-import { Package } from "lucide-react";
+import { MessageCircle, Package } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getPedidosPorUsuario } from "@/server/services/pedido.service";
 import { formatearMoneda } from "@/lib/utils";
@@ -48,6 +48,17 @@ export default async function CuentaPedidosPage() {
                 <span className="text-sm text-text-muted">Total</span>
                 <span className="text-lg font-bold">{formatearMoneda(pedido.total)}</span>
               </div>
+
+              {pedido.enlaceWhatsApp && (
+                <a
+                  href={pedido.enlaceWhatsApp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 flex items-center justify-center gap-2 rounded-full border border-border py-2 text-xs font-semibold uppercase tracking-wider hover:bg-surface-muted"
+                >
+                  <MessageCircle size={14} /> Reenviar pedido por WhatsApp
+                </a>
+              )}
             </div>
           ))}
         </div>

@@ -22,6 +22,7 @@ vi.mock("@/server/repositories/pedido.repository", () => ({
 
 vi.mock("@/server/repositories/usuario.repository", () => ({
   crearUsuario: vi.fn(),
+  getUsuarioPorId: vi.fn(),
 }));
 
 vi.mock("@/server/services/carrito.service", () => ({
@@ -37,9 +38,19 @@ vi.mock("@/server/services/log.service", () => ({
   registrarActividad: vi.fn(),
 }));
 
+vi.mock("@/server/services/email.service", () => ({
+  enviarEmail: vi.fn(),
+  plantillaBase: vi.fn((html: string) => html),
+}));
+
+vi.mock("@/config/site", () => ({
+  siteConfig: { nombreCompleto: "Amour Bloom", url: "https://amourbloom.com", emailNotificaciones: "tienda@amourbloom.com" },
+}));
+
 import * as pedidoRepo from "@/server/repositories/pedido.repository";
 import * as usuarioRepo from "@/server/repositories/usuario.repository";
 import { calcularCarrito } from "@/server/services/carrito.service";
+import { enviarEmail } from "@/server/services/email.service";
 import { crearPedido } from "./pedido.service";
 
 function carritoMock(overrides: Record<string, unknown> = {}) {
@@ -164,5 +175,48 @@ describe("crearPedido — concurrencia", () => {
 
     expect(resultado.exitoso).toBe(false);
     expect(pedidoRepo.generarNumeroPedido).toHaveBeenCalledTimes(5);
+  });
+});
+
+describe("crearPedido — notificaciones por correo", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    transactionMock.mockImplementation(async (callback) => callback(mockTx));
+    vi.mocked(usuarioRepo.crearUsuario).mockResolvedValue({ id: 42 } as never);
+    vi.mocked(pedidoRepo.generarNumeroPedido).mockResolvedValue("ORD-2026-1001");
+    mockTx.inventory.updateMany.mockResolvedValue({ count: 1 });
+    mockTx.coupon.updateMany.mockResolvedValue({ count: 1 });
+    mockTx.coupon.findUnique.mockResolvedValue(null);
+    vi.mocked(calcularCarrito).mockResolvedValue(carritoMock() as never);
+    mockTx.order.create.mockResolvedValue(ordenCreadaMock());
+  });
+
+  it("envía la notificación interna a la tienda pero no confirmación al cliente si es invitado", async () => {
+    const resultado = await crearPedido(inputMock() as never, null);
+
+    expect(resultado.exitoso).toBe(true);
+    expect(enviarEmail).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(enviarEmail).mock.calls[0][0]).toMatchObject({ to: "tienda@amourbloom.com" });
+    expect(usuarioRepo.getUsuarioPorId).not.toHaveBeenCalled();
+  });
+
+  it("envía la notificación interna Y la confirmación al cliente si tiene cuenta con correo", async () => {
+    vi.mocked(usuarioRepo.getUsuarioPorId).mockResolvedValue({ email: "cliente@example.com" } as never);
+
+    const resultado = await crearPedido(inputMock() as never, 42);
+
+    expect(resultado.exitoso).toBe(true);
+    expect(enviarEmail).toHaveBeenCalledTimes(2);
+    const destinatarios = vi.mocked(enviarEmail).mock.calls.map((call) => call[0].to);
+    expect(destinatarios).toContain("tienda@amourbloom.com");
+    expect(destinatarios).toContain("cliente@example.com");
+  });
+
+  it("no falla el pedido si el envío de correo lanza un error", async () => {
+    vi.mocked(enviarEmail).mockRejectedValue(new Error("Resend no disponible"));
+
+    const resultado = await crearPedido(inputMock() as never, null);
+
+    expect(resultado.exitoso).toBe(true);
   });
 });

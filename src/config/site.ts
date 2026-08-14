@@ -5,6 +5,7 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   whatsappNumero: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "50200000000",
   whatsappSaludo: "Hola, deseo realizar el siguiente pedido.",
+  emailNotificaciones: process.env.STORE_NOTIFICATION_EMAIL ?? "",
 };
 
 export type SiteConfig = typeof siteConfig;

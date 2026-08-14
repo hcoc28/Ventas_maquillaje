@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Minus, Plus, ShoppingBag, Tag, Trash2, X } from "lucide-react";
+import { ArrowLeft, MessageCircle, Minus, Plus, ShoppingBag, Tag, Trash2, X } from "lucide-react";
 import { useCart } from "@/components/cart/cart-context";
 import { useToast } from "@/components/ui/toast-provider";
 import { formatearMoneda } from "@/lib/utils";
@@ -31,6 +31,7 @@ export function CartDrawer() {
   const { mostrar } = useToast();
   const [inputCupon, setInputCupon] = useState("");
   const [aplicandoCupon, setAplicandoCupon] = useState(false);
+  const [pedidoConfirmado, setPedidoConfirmado] = useState<{ numeroPedido: string; enlaceWhatsApp: string } | null>(null);
 
   async function onAplicarCupon() {
     if (!inputCupon.trim()) return;
@@ -42,14 +43,19 @@ export function CartDrawer() {
     }
   }
 
+  const cerrar = useCallback(() => {
+    setPedidoConfirmado(null);
+    cerrarDrawer();
+  }, [cerrarDrawer]);
+
   useEffect(() => {
     if (!drawerAbierto) return;
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") cerrarDrawer();
+      if (e.key === "Escape") cerrar();
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [drawerAbierto, cerrarDrawer]);
+  }, [drawerAbierto, cerrar]);
 
   const {
     register,
@@ -68,11 +74,13 @@ export function CartDrawer() {
         codigoCupon: carrito.codigoCupon,
       };
       const { data: resultado } = await axios.post("/api/pedidos", payload);
+      // El auto-apertura puede ser bloqueada por el navegador al no ser un gesto directo del
+      // usuario (ocurre después del await); por eso siempre mostramos también un botón manual.
       window.open(resultado.enlaceWhatsApp, "_blank", "noopener");
-      mostrar(`Pedido ${resultado.numeroPedido} creado. ¡Completa el envío en WhatsApp!`);
+      mostrar(`Pedido ${resultado.numeroPedido} creado.`);
+      setPedidoConfirmado({ numeroPedido: resultado.numeroPedido, enlaceWhatsApp: resultado.enlaceWhatsApp });
       vaciarSilencioso();
       reset();
-      cerrarDrawer();
     } catch (err) {
       const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
       mostrar(mensaje ?? "No se pudo crear el pedido.", "error");
@@ -83,7 +91,7 @@ export function CartDrawer() {
     <AnimatePresence>
       {drawerAbierto && (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={cerrarDrawer} className="fixed inset-0 z-[1400] bg-black/50" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={cerrar} className="fixed inset-0 z-[1400] bg-black/50" />
           <motion.aside
             role="dialog"
             aria-modal="true"
@@ -98,12 +106,30 @@ export function CartDrawer() {
               <h3 className="flex items-center gap-2.5 text-lg font-semibold">
                 <ShoppingBag size={20} /> Tu Carrito
               </h3>
-              <button onClick={cerrarDrawer} aria-label="Cerrar carrito" className="rounded-full p-2 hover:bg-surface-muted">
+              <button onClick={cerrar} aria-label="Cerrar carrito" className="rounded-full p-2 hover:bg-surface-muted">
                 <X size={20} />
               </button>
             </div>
 
-            {!checkoutAbierto ? (
+            {pedidoConfirmado ? (
+              <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-5 text-center">
+                <p className="text-lg font-semibold">¡Pedido {pedidoConfirmado.numeroPedido} creado!</p>
+                <p className="text-sm text-text-muted">
+                  Intentamos abrir WhatsApp automáticamente. Si no se abrió, usa el botón para completar el envío.
+                </p>
+                <a
+                  href={pedidoConfirmado.enlaceWhatsApp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-semibold uppercase tracking-wider text-white hover:bg-accent-strong"
+                >
+                  <MessageCircle size={16} /> Abrir WhatsApp
+                </a>
+                <button onClick={cerrar} className="text-xs font-semibold uppercase tracking-wider text-text-muted hover:text-foreground">
+                  Cerrar
+                </button>
+              </div>
+            ) : !checkoutAbierto ? (
               <div className="flex flex-1 flex-col overflow-y-auto px-6 py-5">
                 {carrito.items.length === 0 ? (
                   <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center text-text-muted">
