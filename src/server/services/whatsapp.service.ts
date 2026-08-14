@@ -38,9 +38,15 @@ export function construirEnlaceWhatsApp(mensaje: string): string {
 const MENSAJES_ESTADO: Record<string, string> = {
   Confirmado: "confirmamos tu pedido y ya lo estamos preparando",
   Enviado: "tu pedido ya está en camino",
-  Entregado: "tu pedido fue entregado, ¡gracias por tu compra!",
+  Entregado: "tu pedido fue entregado",
   Cancelado: "tu pedido fue cancelado",
 };
+
+const CIERRES_ESTADO: Record<string, string> = {
+  Cancelado: "Cualquier duda, contáctanos.",
+};
+
+const CIERRE_POR_DEFECTO = "Gracias por tu compra.";
 
 /** Enlace para que el admin notifique manualmente al CLIENTE (no al negocio) sobre un cambio de estado. */
 export function construirEnlaceNotificacionEstado(pedido: {
@@ -54,10 +60,11 @@ export function construirEnlaceNotificacionEstado(pedido: {
   if (digitos.length === 8) digitos = `502${digitos}`;
 
   const detalleEstado = MENSAJES_ESTADO[pedido.estado] ?? `tu pedido cambió de estado a "${pedido.estado}"`;
+  const cierre = CIERRES_ESTADO[pedido.estado] ?? CIERRE_POR_DEFECTO;
   const mensaje = [
     `Hola ${pedido.nombreContacto}, te escribimos de ${siteConfig.nombreCompleto}.`,
     `Pedido *${pedido.numeroPedido}*: ${detalleEstado}.`,
-    "Gracias por tu compra.",
+    cierre,
   ].join("\n");
 
   return `https://wa.me/${digitos}?text=${encodeURIComponent(mensaje)}`;
