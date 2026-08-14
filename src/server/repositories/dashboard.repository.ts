@@ -19,6 +19,11 @@ interface VentaPorCategoria {
   total: number;
 }
 
+interface VentaPorMetodoPago {
+  metodoPago: string;
+  total: number;
+}
+
 interface ProductoTop {
   productId: number;
   nombre: string;
@@ -50,6 +55,16 @@ export async function getVentasPorCategoria(fechaInicio: Date): Promise<VentaPor
   `);
 }
 
+export async function getVentasPorMetodoPago(fechaInicio: Date): Promise<VentaPorMetodoPago[]> {
+  return prisma.$queryRaw<VentaPorMetodoPago[]>(Prisma.sql`
+    SELECT metodo_pago AS metodoPago, SUM(total) AS total
+    FROM orders
+    WHERE estado != 'Cancelado' AND created_at >= ${fechaInicio}
+    GROUP BY metodo_pago
+    ORDER BY total DESC
+  `);
+}
+
 export async function getTopProductos(fechaInicio: Date, limite: number): Promise<ProductoTop[]> {
   return prisma.$queryRaw<ProductoTop[]>(Prisma.sql`
     SELECT TOP (${limite}) p.id AS productId, p.nombre, p.slug,
@@ -65,42 +80,67 @@ export async function getTopProductos(fechaInicio: Date, limite: number): Promis
 }
 
 export async function getReportesVentas(fechaInicio: Date) {
-  const [ventasPorDia, ventasPorCategoria, topProductos] = await Promise.all([
+  const [ventasPorDia, ventasPorCategoria, ventasPorMetodoPago, topProductos] = await Promise.all([
     getVentasPorDia(fechaInicio),
     getVentasPorCategoria(fechaInicio),
+    getVentasPorMetodoPago(fechaInicio),
     getTopProductos(fechaInicio, 5),
   ]);
 
-  return { ventasPorDia, ventasPorCategoria, topProductos };
+  return { ventasPorDia, ventasPorCategoria, ventasPorMetodoPago, topProductos };
 }
 
 export async function getEstadisticasDashboard() {
-  const [totalProductos, totalUsuarios, totalPedidos, ingresos, pedidosRecientes, productosBajoStock] =
-    await Promise.all([
-      prisma.product.count({ where: { activo: true } }),
-      prisma.user.count({ where: { activo: true } }),
-      prisma.order.count(),
-      prisma.order.aggregate({ _sum: { total: true }, where: { estado: { not: "Cancelado" } } }),
-      prisma.order.findMany({
-        take: 5,
-        orderBy: { createdAt: "desc" },
-        include: { user: { select: { nombre: true, apellido: true } } },
-      }),
-      prisma.$queryRaw<ProductoBajoStock[]>(Prisma.sql`
-        SELECT TOP 8 i.product_id AS productId, i.stock, i.stock_minimo AS stockMinimo, p.nombre, p.slug
-        FROM inventory i
-        INNER JOIN products p ON p.id = i.product_id
-        WHERE i.stock <= i.stock_minimo AND p.activo = 1
-        ORDER BY i.stock ASC
-      `),
-    ]);
+  const [
+    totalProductos,
+    totalUsuarios,
+    totalPedidos,
+    pedidosPendientes,
+    ingresos,
+    pedidosRecientes,
+    productosBajoStock,
+    cuponesUsados,
+    ultimosMensajesContacto,
+  ] = await Promise.all([
+    prisma.product.count({ where: { activo: true } }),
+    prisma.user.count({ where: { activo: true } }),
+    prisma.order.count(),
+    prisma.order.count({ where: { estado: "Pendiente" } }),
+    prisma.order.aggregate({ _sum: { total: true }, where: { estado: { not: "Cancelado" } } }),
+    prisma.order.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: { user: { select: { nombre: true, apellido: true } } },
+    }),
+    prisma.$queryRaw<ProductoBajoStock[]>(Prisma.sql`
+      SELECT TOP 8 i.product_id AS productId, i.stock, i.stock_minimo AS stockMinimo, p.nombre, p.slug
+      FROM inventory i
+      INNER JOIN products p ON p.id = i.product_id
+      WHERE i.stock <= i.stock_minimo AND p.activo = 1
+      ORDER BY i.stock ASC
+    `),
+    prisma.coupon.findMany({
+      where: { vecesUsado: { gt: 0 } },
+      orderBy: { vecesUsado: "desc" },
+      take: 5,
+      select: { id: true, codigo: true, vecesUsado: true, usoMaximo: true },
+    }),
+    prisma.contactMessage.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      select: { id: true, nombre: true, asunto: true, leido: true, createdAt: true },
+    }),
+  ]);
 
   return {
     totalProductos,
     totalUsuarios,
     totalPedidos,
+    pedidosPendientes,
     ingresosTotales: Number(ingresos._sum.total ?? 0),
     pedidosRecientes,
     productosBajoStock,
+    cuponesUsados,
+    ultimosMensajesContacto,
   };
 }

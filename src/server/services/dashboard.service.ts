@@ -12,6 +12,13 @@ export async function getEstadisticasDashboard() {
       fecha: p.createdAt.toISOString(),
       cliente: `${p.user.nombre} ${p.user.apellido}`,
     })),
+    ultimosMensajesContacto: stats.ultimosMensajesContacto.map((m) => ({
+      id: m.id,
+      nombre: m.nombre,
+      asunto: m.asunto,
+      leido: m.leido,
+      fecha: m.createdAt.toISOString(),
+    })),
   };
 }
 
@@ -29,6 +36,10 @@ export async function getReportesVentas(dias: number) {
     })),
     ventasPorCategoria: reporte.ventasPorCategoria.map((v) => ({
       categoria: v.categoria,
+      total: Number(v.total),
+    })),
+    ventasPorMetodoPago: reporte.ventasPorMetodoPago.map((v) => ({
+      metodoPago: v.metodoPago,
       total: Number(v.total),
     })),
     topProductos: reporte.topProductos.map((p) => ({
