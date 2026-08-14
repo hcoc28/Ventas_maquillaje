@@ -64,7 +64,6 @@ export default async function CatalogoPage({ searchParams }: CatalogoPageProps) 
   return (
     <CatalogoClient
       categorias={categorias}
-      marcas={marcas}
       resultadoInicial={resultadoInicial}
       filtroInicial={{ q, categorias: categoriasSel, marcas: marcasSel, oferta, stock, orden, pagina }}
     />
