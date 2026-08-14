@@ -1,6 +1,6 @@
 # Amour Bloom
 
-Catálogo premium de maquillaje y skincare de lujo, construido con Next.js 15 (App Router), React 19, TypeScript, Prisma ORM y SQL Server. Incluye catálogo con filtros en tiempo real, carrito con checkout coordinado por WhatsApp, autenticación de clientes (Auth.js) y un panel administrativo completo con roles.
+Catálogo premium de maquillaje y skincare de lujo, construido con Next.js 16 (App Router), React 19, TypeScript, Prisma ORM y SQL Server. Incluye catálogo con filtros y búsqueda en tiempo real, reseñas de producto, cupones de descuento, carrito con checkout coordinado por WhatsApp, autenticación de clientes (Auth.js) y un panel administrativo completo con roles.
 
 ## Stack
 
@@ -11,7 +11,11 @@ Catálogo premium de maquillaje y skincare de lujo, construido con Next.js 15 (A
 - **Datos:** Prisma ORM 7 (generador `prisma-client` con driver adapters) + SQL Server, vía `@prisma/adapter-mssql`
 - **Autenticación:** Auth.js (NextAuth v5), Credentials + JWT, bcrypt
 - **HTTP cliente:** Axios
-- **Imágenes:** Cloudinary (integración lista, usando imágenes de stock hasta configurar credenciales reales)
+- **Imágenes:** Cloudinary (subida de archivo o por URL desde el panel administrativo)
+- **Correo transaccional:** Resend (recuperación de contraseña, bienvenida, confirmación de pedido y notificación interna a la tienda)
+- **Rate limiting:** Upstash Redis (con fallback en memoria si no está configurado)
+- **Monitoreo y analítica:** Sentry (errores) y Google Analytics 4 — ambos opcionales, deshabilitados sin sus variables de entorno
+- **Pruebas:** Vitest
 
 ## Arquitectura
 
@@ -56,7 +60,7 @@ prisma/
    - `DB_SERVER`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: credenciales SQL usadas en tiempo de ejecución por el driver adapter (`@prisma/adapter-mssql`, vía Tedious, requiere login SQL — no Windows Auth).
    - `AUTH_SECRET`: genera uno con `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
    - `NEXT_PUBLIC_WHATSAPP_NUMBER`: número (con código de país, sin `+`) usado para el checkout por WhatsApp.
-   - Variables de `CLOUDINARY_*`: opcionales hasta conectar credenciales reales.
+   - Variables de `CLOUDINARY_*`: necesarias para subir archivos de imagen desde el panel administrativo. Sin ellas, los campos de imagen siguen aceptando una URL directa, pero el botón "Subir" fallará.
 
 3. Aplica las migraciones y siembra datos de ejemplo:
 
@@ -86,12 +90,20 @@ Abre [http://localhost:3000](http://localhost:3000).
 | `npm run start` | Sirve el build de producción |
 | `npm run lint` | ESLint |
 | `npx tsc --noEmit` | Verificación de tipos |
+| `npm test` | Ejecuta la suite de pruebas (Vitest) una sola vez |
+| `npm run test:watch` | Ejecuta la suite de pruebas en modo watch |
 | `npm run db:migrate` | Aplica migraciones pendientes (`prisma migrate deploy`) |
 | `npm run db:seed` | Siembra datos de ejemplo |
 
 ## Panel administrativo
 
-Accede en `/admin` con una cuenta de rol `Administrador` o `Empleado`. Incluye dashboard con KPIs, y CRUD completo de productos (con imágenes e inventario), categorías, marcas, promociones, banners, además de gestión de usuarios y pedidos.
+Accede en `/admin` con una cuenta de rol `Administrador` o `Empleado`. Incluye:
+
+- Dashboard con KPIs (ingresos, pedidos, pedidos pendientes, stock crítico), reportes de ventas por día/categoría/método de pago, productos más vendidos, cupones más usados y últimos mensajes de contacto.
+- CRUD completo de productos (con imágenes e inventario), categorías, marcas, promociones, cupones y banners — con filtro para ocultar inactivos por defecto y activar/desactivar sin pasar por "eliminar".
+- Gestión de pedidos (cambio de estado, notificación al cliente por WhatsApp) y de usuarios (activar/desactivar; el rol solo se asigna al crear la cuenta y no se puede reasignar después).
+- Moderación de opiniones de producto.
+- Mensajes de contacto (marcar como leído) y suscriptores del newsletter (activar/desactivar, exportar a CSV).
 
 ## Despliegue con Docker
 
@@ -115,5 +127,5 @@ Esto levanta:
 ## Seguridad
 
 - Cabeceras de seguridad (CSP, HSTS, X-Frame-Options, etc.) configuradas en `next.config.ts`.
-- Rate limiting en memoria sobre endpoints sensibles (login, registro, newsletter, contacto, pedidos, favoritos) — ver `src/lib/rate-limit.ts` y `src/proxy.ts`.
+- Rate limiting sobre endpoints sensibles (login, registro, newsletter, contacto, pedidos, favoritos) — vía Upstash Redis si está configurado, con fallback en memoria; ver `src/lib/rate-limit.ts` y `src/proxy.ts`.
 - Registro de actividad (`activity_logs`) y auditoría (`audit_logs`) sobre acciones críticas y mutaciones del panel administrativo.
