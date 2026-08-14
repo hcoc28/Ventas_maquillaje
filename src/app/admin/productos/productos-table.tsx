@@ -12,7 +12,15 @@ import type { getTodosLosProductosAdmin } from "@/server/services/producto.servi
 
 type Resultado = Awaited<ReturnType<typeof getTodosLosProductosAdmin>>;
 
-export function ProductosTable({ resultado, busquedaInicial }: { resultado: Resultado; busquedaInicial: string }) {
+export function ProductosTable({
+  resultado,
+  busquedaInicial,
+  mostrarTodosInicial,
+}: {
+  resultado: Resultado;
+  busquedaInicial: string;
+  mostrarTodosInicial: boolean;
+}) {
   const router = useRouter();
   const { mostrar } = useToast();
   const [termino, setTermino] = useState(busquedaInicial);
@@ -25,6 +33,7 @@ export function ProductosTable({ resultado, busquedaInicial }: { resultado: Resu
     debounceRef.current = setTimeout(() => {
       const params = new URLSearchParams();
       if (termino.trim()) params.set("q", termino.trim());
+      if (mostrarTodosInicial) params.set("todos", "1");
       params.set("pagina", "1");
       router.push(`/admin/productos?${params.toString()}`);
     }, 350);
@@ -37,7 +46,16 @@ export function ProductosTable({ resultado, busquedaInicial }: { resultado: Resu
   function irAPagina(p: number) {
     const params = new URLSearchParams();
     if (busquedaInicial) params.set("q", busquedaInicial);
+    if (mostrarTodosInicial) params.set("todos", "1");
     params.set("pagina", String(p));
+    router.push(`/admin/productos?${params.toString()}`);
+  }
+
+  function alternarMostrarTodos(mostrarTodos: boolean) {
+    const params = new URLSearchParams();
+    if (busquedaInicial) params.set("q", busquedaInicial);
+    if (mostrarTodos) params.set("todos", "1");
+    params.set("pagina", "1");
     router.push(`/admin/productos?${params.toString()}`);
   }
 
@@ -67,6 +85,15 @@ export function ProductosTable({ resultado, busquedaInicial }: { resultado: Resu
             className="w-full rounded-full border border-border bg-surface py-2.5 pl-11 pr-4 text-sm outline-none focus:border-accent-strong"
           />
         </div>
+        <label className="flex items-center gap-2 text-sm text-text-muted">
+          <input
+            type="checkbox"
+            checked={mostrarTodosInicial}
+            onChange={(e) => alternarMostrarTodos(e.target.checked)}
+            className="h-4 w-4"
+          />
+          Mostrar inactivos
+        </label>
         <span className="text-sm text-text-muted">{resultado.totalRegistros} productos</span>
       </div>
 

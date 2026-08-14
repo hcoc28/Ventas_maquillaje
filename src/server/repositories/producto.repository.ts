@@ -198,20 +198,24 @@ export interface FiltroProductosAdmin {
   pagina: number;
   tamanoPagina: number;
   busqueda?: string;
+  soloActivos?: boolean;
 }
 
 export async function getTodosLosProductosAdmin(filtro: FiltroProductosAdmin) {
-  const { pagina, tamanoPagina, busqueda } = filtro;
+  const { pagina, tamanoPagina, busqueda, soloActivos } = filtro;
 
-  const where: Prisma.ProductWhereInput = busqueda
-    ? {
-        OR: [
-          { nombre: { contains: busqueda } },
-          { brand: { nombre: { contains: busqueda } } },
-          { category: { nombre: { contains: busqueda } } },
-        ],
-      }
-    : {};
+  const where: Prisma.ProductWhereInput = {
+    ...(soloActivos ? { activo: true } : {}),
+    ...(busqueda
+      ? {
+          OR: [
+            { nombre: { contains: busqueda } },
+            { brand: { nombre: { contains: busqueda } } },
+            { category: { nombre: { contains: busqueda } } },
+          ],
+        }
+      : {}),
+  };
 
   const [total, items] = await Promise.all([
     prisma.product.count({ where }),

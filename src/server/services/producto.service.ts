@@ -140,6 +140,7 @@ export async function getTodosLosProductosAdmin(filtro: {
   pagina: number;
   tamanoPagina: number;
   busqueda?: string;
+  soloActivos?: boolean;
 }): Promise<PagedResult<ProductoConRelaciones>> {
   const { pagina, tamanoPagina } = filtro;
   const { items, total } = await productoRepo.getTodosLosProductosAdmin(filtro);

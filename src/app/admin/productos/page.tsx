@@ -6,15 +6,21 @@ import { ProductosTable } from "./productos-table";
 const TAMANO_PAGINA = 20;
 
 interface Props {
-  searchParams: Promise<{ pagina?: string; q?: string }>;
+  searchParams: Promise<{ pagina?: string; q?: string; todos?: string }>;
 }
 
 export default async function AdminProductosPage({ searchParams }: Props) {
   const params = await searchParams;
   const pagina = Math.max(Number(params.pagina) || 1, 1);
   const busqueda = params.q?.trim() || undefined;
+  const mostrarTodos = params.todos === "1";
 
-  const resultado = await getTodosLosProductosAdmin({ pagina, tamanoPagina: TAMANO_PAGINA, busqueda });
+  const resultado = await getTodosLosProductosAdmin({
+    pagina,
+    tamanoPagina: TAMANO_PAGINA,
+    busqueda,
+    soloActivos: !mostrarTodos,
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -31,7 +37,7 @@ export default async function AdminProductosPage({ searchParams }: Props) {
         </Link>
       </div>
 
-      <ProductosTable resultado={resultado} busquedaInicial={busqueda ?? ""} />
+      <ProductosTable resultado={resultado} busquedaInicial={busqueda ?? ""} mostrarTodosInicial={mostrarTodos} />
     </div>
   );
 }
