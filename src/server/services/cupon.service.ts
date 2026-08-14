@@ -60,7 +60,3 @@ export async function actualizarCuponAdmin(id: number, data: CuponAdminInput) {
 export async function desactivarCuponAdmin(id: number) {
   return cuponRepo.desactivarCupon(id);
 }
-
-export async function registrarUsoCupon(id: number) {
-  return cuponRepo.incrementarUso(id);
-}

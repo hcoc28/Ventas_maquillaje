@@ -24,7 +24,3 @@ export async function actualizarCupon(id: number, data: Prisma.CouponUpdateInput
 export async function desactivarCupon(id: number) {
   return prisma.coupon.update({ where: { id }, data: { activo: false } });
 }
-
-export async function incrementarUso(id: number) {
-  return prisma.coupon.update({ where: { id }, data: { vecesUsado: { increment: 1 } } });
-}

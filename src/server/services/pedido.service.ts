@@ -1,13 +1,33 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import * as pedidoRepo from "@/server/repositories/pedido.repository";
 import * as usuarioRepo from "@/server/repositories/usuario.repository";
 import { calcularCarrito } from "@/server/services/carrito.service";
-import { registrarUsoCupon } from "@/server/services/cupon.service";
 import { construirEnlaceWhatsApp, construirMensajeWhatsApp } from "@/server/services/whatsapp.service";
 import { registrarActividad } from "@/server/services/log.service";
 import { METODOS_PAGO } from "@/validators/pedido";
 import type { CrearPedidoInput, PedidoResumen, Resultado } from "@/types/carrito";
+
+const MAX_INTENTOS_NUMERO_PEDIDO = 5;
+
+/** Se usa para abortar la transacción (rollback) cuando el stock ya no alcanza al momento de descontar. */
+class StockInsuficienteError extends Error {
+  constructor(nombreProducto: string) {
+    super(`Ya no hay suficiente stock de "${nombreProducto}".`);
+  }
+}
+
+/** Se usa para abortar la transacción (rollback) cuando el cupón agota su límite justo antes de aplicarlo. */
+class CuponAgotadoError extends Error {
+  constructor() {
+    super("El cupón ya alcanzó su límite de usos.");
+  }
+}
+
+function esColisionNumeroPedido(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+}
 
 async function obtenerOCrearUsuarioParaPedido(input: CrearPedidoInput, userId: number | null): Promise<number> {
   if (userId) return userId;
@@ -85,45 +105,84 @@ export async function crearPedido(input: CrearPedidoInput, userId: number | null
   }
 
   const usuarioId = await obtenerOCrearUsuarioParaPedido(input, userId);
-  const numeroPedido = await pedidoRepo.generarNumeroPedido();
 
-  const pedido = await prisma.$transaction(async (tx) => {
-    const creado = await tx.order.create({
-      data: {
-        numeroPedido,
-        userId: usuarioId,
-        subtotal: carrito.subtotal,
-        descuento: carrito.descuento,
-        cuponCodigo: carrito.codigoCupon ?? null,
-        total: carrito.total,
-        nombreContacto: input.nombreContacto,
-        telefonoContacto: input.telefonoContacto,
-        metodoPago: input.metodoPago,
-        observaciones: input.observaciones || null,
-        details: {
-          create: carrito.items.map((item) => ({
-            productId: item.productoId,
-            nombreProducto: item.nombre,
-            cantidad: item.cantidad,
-            precioUnitario: item.precioUnitario,
-          })),
-        },
-      },
-      include: { details: true },
-    });
+  let pedido;
+  for (let intento = 1; intento <= MAX_INTENTOS_NUMERO_PEDIDO; intento++) {
+    const numeroPedido = await pedidoRepo.generarNumeroPedido();
+    try {
+      pedido = await prisma.$transaction(async (tx) => {
+        const creado = await tx.order.create({
+          data: {
+            numeroPedido,
+            userId: usuarioId,
+            subtotal: carrito.subtotal,
+            descuento: carrito.descuento,
+            cuponCodigo: carrito.codigoCupon ?? null,
+            total: carrito.total,
+            nombreContacto: input.nombreContacto,
+            telefonoContacto: input.telefonoContacto,
+            metodoPago: input.metodoPago,
+            observaciones: input.observaciones || null,
+            details: {
+              create: carrito.items.map((item) => ({
+                productId: item.productoId,
+                nombreProducto: item.nombre,
+                cantidad: item.cantidad,
+                precioUnitario: item.precioUnitario,
+              })),
+            },
+          },
+          include: { details: true },
+        });
 
-    for (const item of carrito.items) {
-      await tx.inventory.updateMany({
-        where: { productId: item.productoId },
-        data: { stock: { decrement: item.cantidad } },
+        // Descuento atómico y condicional: si dos pedidos compiten por el mismo stock, esta
+        // actualización solo aplica cuando aún alcanza — evita vender de más (oversell).
+        for (const item of carrito.items) {
+          const resultado = await tx.inventory.updateMany({
+            where: { productId: item.productoId, stock: { gte: item.cantidad } },
+            data: { stock: { decrement: item.cantidad } },
+          });
+          if (resultado.count === 0) {
+            throw new StockInsuficienteError(item.nombre);
+          }
+        }
+
+        // Uso de cupón atómico: se hace dentro de la MISMA transacción que el pedido, condicionado
+        // a que aún no llegue al límite — si dos clientes usan el último cupón a la vez, solo uno
+        // gana y el otro revierte el pedido completo (rollback) en vez de dejar el cupón sobre-usado.
+        if (carrito.cuponId) {
+          const cupon = await tx.coupon.findUnique({ where: { id: carrito.cuponId }, select: { usoMaximo: true } });
+          const resultadoCupon = await tx.coupon.updateMany({
+            where: {
+              id: carrito.cuponId,
+              ...(cupon?.usoMaximo != null ? { vecesUsado: { lt: cupon.usoMaximo } } : {}),
+            },
+            data: { vecesUsado: { increment: 1 } },
+          });
+          if (resultadoCupon.count === 0) {
+            throw new CuponAgotadoError();
+          }
+        }
+
+        return creado;
       });
+      break;
+    } catch (error) {
+      if (esColisionNumeroPedido(error)) {
+        if (intento < MAX_INTENTOS_NUMERO_PEDIDO) {
+          continue;
+        }
+        return { exitoso: false, errores: ["No se pudo generar el número de pedido, intenta de nuevo."] };
+      }
+      if (error instanceof StockInsuficienteError || error instanceof CuponAgotadoError) {
+        return { exitoso: false, errores: [error.message] };
+      }
+      throw error;
     }
+  }
 
-    return creado;
-  });
-
-  if (carrito.cuponId) {
-    await registrarUsoCupon(carrito.cuponId);
+  if (!pedido) {
+    return { exitoso: false, errores: ["No se pudo generar el número de pedido, intenta de nuevo."] };
   }
 
   const resumen = mapearPedido(pedido);

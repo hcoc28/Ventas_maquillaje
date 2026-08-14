@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@/generated/prisma/client";
 
 export async function generarNumeroPedido(): Promise<string> {
   const anio = new Date().getFullYear();
@@ -9,10 +8,6 @@ export async function generarNumeroPedido(): Promise<string> {
     where: { createdAt: { gte: inicioAnio, lt: finAnio } },
   });
   return `ORD-${anio}-${1001 + total}`;
-}
-
-export async function crearPedido(data: Prisma.OrderCreateInput) {
-  return prisma.order.create({ data, include: { details: true } });
 }
 
 export async function getPedidosPorUsuario(userId: number) {
@@ -36,15 +31,4 @@ export async function getTodosLosPedidos() {
 
 export async function actualizarEstadoPedido(id: number, estado: string) {
   return prisma.order.update({ where: { id }, data: { estado } });
-}
-
-export async function decrementarStock(productId: number, cantidad: number) {
-  await prisma.inventory.updateMany({
-    where: { productId },
-    data: { stock: { decrement: cantidad } },
-  });
-  await prisma.inventory.updateMany({
-    where: { productId, stock: { lt: 0 } },
-    data: { stock: 0 },
-  });
 }
