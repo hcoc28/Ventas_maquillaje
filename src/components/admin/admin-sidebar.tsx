@@ -13,6 +13,8 @@ import {
   Users,
   ClipboardList,
   Star,
+  MessageSquare,
+  Mail,
   ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,6 +29,8 @@ const links = [
   { href: "/admin/opiniones", label: "Opiniones", icon: Star },
   { href: "/admin/banners", label: "Banners", icon: ImageIcon },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
+  { href: "/admin/contacto", label: "Contacto", icon: MessageSquare },
+  { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/usuarios", label: "Usuarios", icon: Users, soloAdmin: true },
 ];
 

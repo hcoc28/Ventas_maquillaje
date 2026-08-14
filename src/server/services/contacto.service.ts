@@ -15,3 +15,11 @@ export async function enviarMensaje(
   });
   return { exitoso: true, valor: true };
 }
+
+export async function getTodosLosMensajesAdmin() {
+  return contactoRepo.getTodosLosMensajesAdmin();
+}
+
+export async function marcarMensajeLeidoAdmin(id: number) {
+  return contactoRepo.marcarLeido(id);
+}

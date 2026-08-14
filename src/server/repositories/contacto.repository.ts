@@ -8,3 +8,11 @@ export async function guardarMensajeContacto(data: {
 }) {
   return prisma.contactMessage.create({ data });
 }
+
+export async function getTodosLosMensajesAdmin() {
+  return prisma.contactMessage.findMany({ orderBy: { createdAt: "desc" } });
+}
+
+export async function marcarLeido(id: number) {
+  return prisma.contactMessage.update({ where: { id }, data: { leido: true } });
+}
