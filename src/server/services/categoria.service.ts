@@ -38,3 +38,7 @@ export async function actualizarCategoria(id: number, data: CategoriaAdminInput)
 export async function eliminarCategoria(id: number) {
   return categoriaRepo.eliminarCategoria(id);
 }
+
+export async function activarCategoria(id: number) {
+  return categoriaRepo.activarCategoria(id);
+}

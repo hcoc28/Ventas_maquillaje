@@ -5,8 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { Pencil, Search, Trash2 } from "lucide-react";
+import { Pencil, Search } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
+import { AccionesMenu } from "@/components/admin/acciones-menu";
 import { formatearMoneda } from "@/lib/utils";
 import type { getTodosLosProductosAdmin } from "@/server/services/producto.service";
 
@@ -24,7 +25,6 @@ export function ProductosTable({
   const router = useRouter();
   const { mostrar } = useToast();
   const [termino, setTermino] = useState(busquedaInicial);
-  const [eliminando, setEliminando] = useState<number | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -59,17 +59,13 @@ export function ProductosTable({
     router.push(`/admin/productos?${params.toString()}`);
   }
 
-  async function eliminar(id: number, nombre: string) {
-    if (!confirm(`¿Desactivar el producto "${nombre}"?`)) return;
-    setEliminando(id);
+  async function cambiarActivo(id: number, activo: boolean) {
     try {
-      await axios.delete(`/api/admin/productos/${id}`);
-      mostrar("Producto desactivado.");
+      await axios.patch(`/api/admin/productos/${id}`, { activo });
+      mostrar(activo ? "Producto activado." : "Producto desactivado.");
       router.refresh();
     } catch {
-      mostrar("No se pudo desactivar el producto.", "error");
-    } finally {
-      setEliminando(null);
+      mostrar("No se pudo actualizar el producto.", "error");
     }
   }
 
@@ -151,15 +147,7 @@ export function ProductosTable({
                       >
                         <Pencil size={15} />
                       </Link>
-                      <button
-                        type="button"
-                        onClick={() => eliminar(p.id, p.nombre)}
-                        disabled={eliminando === p.id}
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 hover:bg-red-500/10 disabled:opacity-50"
-                        aria-label="Desactivar"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      <AccionesMenu activo={p.activo} nombre={p.nombre} onCambiarActivo={(activo) => cambiarActivo(p.id, activo)} />
                     </div>
                   </td>
                 </tr>

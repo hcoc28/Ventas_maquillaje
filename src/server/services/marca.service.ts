@@ -37,3 +37,7 @@ export async function actualizarMarca(id: number, data: MarcaAdminInput) {
 export async function eliminarMarca(id: number) {
   return marcaRepo.eliminarMarca(id);
 }
+
+export async function activarMarca(id: number) {
+  return marcaRepo.activarMarca(id);
+}

@@ -105,8 +105,8 @@ export const pedidoEstadoAdminSchema = z.object({
   estado: z.enum(ESTADOS_PEDIDO),
 });
 
-export const usuarioAdminSchema = z.object({
+export const estadoAdminSchema = z.object({
   activo: z.boolean(),
 });
 
-export type UsuarioAdminInput = z.infer<typeof usuarioAdminSchema>;
+export type EstadoAdminInput = z.infer<typeof estadoAdminSchema>;

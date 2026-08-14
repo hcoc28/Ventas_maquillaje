@@ -295,3 +295,7 @@ export async function actualizarProductoAdmin(id: number, data: ProductoAdminInp
 export async function eliminarProductoAdmin(id: number) {
   return prisma.product.update({ where: { id }, data: { activo: false, deletedAt: new Date() } });
 }
+
+export async function activarProductoAdmin(id: number) {
+  return prisma.product.update({ where: { id }, data: { activo: true, deletedAt: null } });
+}

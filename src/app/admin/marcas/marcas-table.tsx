@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
+import { AccionesMenu } from "@/components/admin/acciones-menu";
 import type { getTodasLasMarcasAdmin } from "@/server/services/marca.service";
 
 type Marca = Awaited<ReturnType<typeof getTodasLasMarcasAdmin>>[number];
@@ -13,7 +13,6 @@ type Marca = Awaited<ReturnType<typeof getTodasLasMarcasAdmin>>[number];
 export function MarcasTable({ marcas, mostrarTodosInicial }: { marcas: Marca[]; mostrarTodosInicial: boolean }) {
   const router = useRouter();
   const { mostrar } = useToast();
-  const [eliminando, setEliminando] = useState<number | null>(null);
 
   function alternarMostrarTodos(mostrarTodos: boolean) {
     const params = new URLSearchParams();
@@ -21,17 +20,13 @@ export function MarcasTable({ marcas, mostrarTodosInicial }: { marcas: Marca[]; 
     router.push(`/admin/marcas?${params.toString()}`);
   }
 
-  async function eliminar(id: number, nombre: string) {
-    if (!confirm(`¿Desactivar la marca "${nombre}"?`)) return;
-    setEliminando(id);
+  async function cambiarActivo(id: number, activo: boolean) {
     try {
-      await axios.delete(`/api/admin/marcas/${id}`);
-      mostrar("Marca desactivada.");
+      await axios.patch(`/api/admin/marcas/${id}`, { activo });
+      mostrar(activo ? "Marca activada." : "Marca desactivada.");
       router.refresh();
     } catch {
-      mostrar("No se pudo desactivar la marca.", "error");
-    } finally {
-      setEliminando(null);
+      mostrar("No se pudo actualizar la marca.", "error");
     }
   }
 
@@ -82,15 +77,7 @@ export function MarcasTable({ marcas, mostrarTodosInicial }: { marcas: Marca[]; 
                   >
                     <Pencil size={15} />
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => eliminar(m.id, m.nombre)}
-                    disabled={eliminando === m.id}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 hover:bg-red-500/10 disabled:opacity-50"
-                    aria-label="Desactivar"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  <AccionesMenu activo={m.activo} nombre={m.nombre} onCambiarActivo={(activo) => cambiarActivo(m.id, activo)} />
                 </div>
               </td>
             </tr>

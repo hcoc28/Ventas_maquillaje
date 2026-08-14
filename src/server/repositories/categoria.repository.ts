@@ -53,3 +53,7 @@ export async function actualizarCategoria(id: number, data: CategoriaAdminInput)
 export async function eliminarCategoria(id: number) {
   return prisma.category.update({ where: { id }, data: { activo: false, deletedAt: new Date() } });
 }
+
+export async function activarCategoria(id: number) {
+  return prisma.category.update({ where: { id }, data: { activo: true, deletedAt: null } });
+}

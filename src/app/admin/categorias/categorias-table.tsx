@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
+import { AccionesMenu } from "@/components/admin/acciones-menu";
 import type { getTodasLasCategoriasAdmin } from "@/server/services/categoria.service";
 
 type Categoria = Awaited<ReturnType<typeof getTodasLasCategoriasAdmin>>[number];
@@ -13,7 +13,6 @@ type Categoria = Awaited<ReturnType<typeof getTodasLasCategoriasAdmin>>[number];
 export function CategoriasTable({ categorias, mostrarTodosInicial }: { categorias: Categoria[]; mostrarTodosInicial: boolean }) {
   const router = useRouter();
   const { mostrar } = useToast();
-  const [eliminando, setEliminando] = useState<number | null>(null);
 
   function alternarMostrarTodos(mostrarTodos: boolean) {
     const params = new URLSearchParams();
@@ -21,17 +20,13 @@ export function CategoriasTable({ categorias, mostrarTodosInicial }: { categoria
     router.push(`/admin/categorias?${params.toString()}`);
   }
 
-  async function eliminar(id: number, nombre: string) {
-    if (!confirm(`¿Desactivar la categoría "${nombre}"?`)) return;
-    setEliminando(id);
+  async function cambiarActivo(id: number, activo: boolean) {
     try {
-      await axios.delete(`/api/admin/categorias/${id}`);
-      mostrar("Categoría desactivada.");
+      await axios.patch(`/api/admin/categorias/${id}`, { activo });
+      mostrar(activo ? "Categoría activada." : "Categoría desactivada.");
       router.refresh();
     } catch {
-      mostrar("No se pudo desactivar la categoría.", "error");
-    } finally {
-      setEliminando(null);
+      mostrar("No se pudo actualizar la categoría.", "error");
     }
   }
 
@@ -84,15 +79,7 @@ export function CategoriasTable({ categorias, mostrarTodosInicial }: { categoria
                   >
                     <Pencil size={15} />
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => eliminar(c.id, c.nombre)}
-                    disabled={eliminando === c.id}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 hover:bg-red-500/10 disabled:opacity-50"
-                    aria-label="Desactivar"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  <AccionesMenu activo={c.activo} nombre={c.nombre} onCambiarActivo={(activo) => cambiarActivo(c.id, activo)} />
                 </div>
               </td>
             </tr>

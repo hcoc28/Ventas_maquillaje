@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { marcaAdminSchema } from "@/validators/admin";
-import { actualizarMarca, eliminarMarca } from "@/server/services/marca.service";
+import { estadoAdminSchema, marcaAdminSchema } from "@/validators/admin";
+import { activarMarca, actualizarMarca, eliminarMarca } from "@/server/services/marca.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -29,19 +29,26 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   return NextResponse.json(marca);
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  await eliminarMarca(Number(id));
+  const body = await request.json().catch(() => null);
+  const parsed = estadoAdminSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
+  }
+
+  const marca = parsed.data.activo ? await activarMarca(Number(id)) : await eliminarMarca(Number(id));
 
   const session = await auth();
   await registrarAuditoria({
     entidad: "Marca",
     entidadId: Number(id),
-    accion: "eliminar",
+    accion: "actualizar",
+    valoresNuevos: parsed.data,
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
 
   revalidatePath("/");
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json(marca);
 }

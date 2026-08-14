@@ -51,3 +51,7 @@ export async function actualizarMarca(id: number, data: MarcaAdminInput) {
 export async function eliminarMarca(id: number) {
   return prisma.brand.update({ where: { id }, data: { activo: false, deletedAt: new Date() } });
 }
+
+export async function activarMarca(id: number) {
+  return prisma.brand.update({ where: { id }, data: { activo: true, deletedAt: null } });
+}

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { usuarioAdminSchema } from "@/validators/admin";
+import { estadoAdminSchema } from "@/validators/admin";
 import { actualizarEstadoUsuario } from "@/server/services/usuario.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await request.json().catch(() => null);
-  const parsed = usuarioAdminSchema.safeParse(body);
+  const parsed = estadoAdminSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
