@@ -8,8 +8,9 @@ export async function getPromocionesActivas() {
   });
 }
 
-export async function getTodasLasPromociones() {
+export async function getTodasLasPromociones(soloActivas?: boolean) {
   return prisma.promotion.findMany({
+    where: soloActivas ? { activo: true } : undefined,
     orderBy: { fechaInicio: "desc" },
     include: { _count: { select: { products: true } } },
   });
@@ -41,4 +42,8 @@ export async function actualizarPromocion(id: number, data: PromocionAdminInput)
 export async function eliminarPromocion(id: number) {
   await prisma.product.updateMany({ where: { promotionId: id }, data: { promotionId: null } });
   return prisma.promotion.update({ where: { id }, data: { activo: false, deletedAt: new Date() } });
+}
+
+export async function activarPromocion(id: number) {
+  return prisma.promotion.update({ where: { id }, data: { activo: true, deletedAt: null } });
 }

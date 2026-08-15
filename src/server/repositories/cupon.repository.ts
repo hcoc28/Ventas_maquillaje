@@ -9,8 +9,8 @@ export async function getCuponPorId(id: number) {
   return prisma.coupon.findUnique({ where: { id } });
 }
 
-export async function getTodosLosCupones() {
-  return prisma.coupon.findMany({ orderBy: { createdAt: "desc" } });
+export async function getTodosLosCupones(soloActivos?: boolean) {
+  return prisma.coupon.findMany({ where: soloActivos ? { activo: true } : undefined, orderBy: { createdAt: "desc" } });
 }
 
 export async function crearCupon(data: Prisma.CouponCreateInput) {
@@ -23,4 +23,8 @@ export async function actualizarCupon(id: number, data: Prisma.CouponUpdateInput
 
 export async function desactivarCupon(id: number) {
   return prisma.coupon.update({ where: { id }, data: { activo: false } });
+}
+
+export async function activarCupon(id: number) {
+  return prisma.coupon.update({ where: { id }, data: { activo: true } });
 }

@@ -3,8 +3,14 @@ import { Plus } from "lucide-react";
 import { getTodasLasPromocionesAdmin } from "@/server/services/promocion.service";
 import { PromocionesTable } from "./promociones-table";
 
-export default async function AdminPromocionesPage() {
-  const promociones = await getTodasLasPromocionesAdmin();
+interface Props {
+  searchParams: Promise<{ todos?: string }>;
+}
+
+export default async function AdminPromocionesPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const mostrarTodos = params.todos === "1";
+  const promociones = await getTodasLasPromocionesAdmin(!mostrarTodos);
 
   return (
     <div className="flex flex-col gap-6">
@@ -21,7 +27,7 @@ export default async function AdminPromocionesPage() {
         </Link>
       </div>
 
-      <PromocionesTable promociones={promociones} />
+      <PromocionesTable promociones={promociones} mostrarTodosInicial={mostrarTodos} />
     </div>
   );
 }

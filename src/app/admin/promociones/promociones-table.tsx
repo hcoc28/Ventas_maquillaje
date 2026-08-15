@@ -1,36 +1,48 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
+import { AccionesMenu } from "@/components/admin/acciones-menu";
 import type { getTodasLasPromocionesAdmin } from "@/server/services/promocion.service";
 
 type Promocion = Awaited<ReturnType<typeof getTodasLasPromocionesAdmin>>[number];
 
-export function PromocionesTable({ promociones }: { promociones: Promocion[] }) {
+export function PromocionesTable({ promociones, mostrarTodosInicial }: { promociones: Promocion[]; mostrarTodosInicial: boolean }) {
   const router = useRouter();
   const { mostrar } = useToast();
-  const [eliminando, setEliminando] = useState<number | null>(null);
 
-  async function eliminar(id: number, nombre: string) {
-    if (!confirm(`¿Desactivar la promoción "${nombre}"?`)) return;
-    setEliminando(id);
+  function alternarMostrarTodos(mostrarTodos: boolean) {
+    const params = new URLSearchParams();
+    if (mostrarTodos) params.set("todos", "1");
+    router.push(`/admin/promociones?${params.toString()}`);
+  }
+
+  async function cambiarActivo(id: number, activo: boolean) {
     try {
-      await axios.delete(`/api/admin/promociones/${id}`);
-      mostrar("Promoción desactivada.");
+      await axios.patch(`/api/admin/promociones/${id}`, { activo });
+      mostrar(activo ? "Promoción activada." : "Promoción desactivada.");
       router.refresh();
     } catch {
-      mostrar("No se pudo desactivar la promoción.", "error");
-    } finally {
-      setEliminando(null);
+      mostrar("No se pudo actualizar la promoción.", "error");
     }
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
+    <div className="flex flex-col gap-4">
+      <label className="flex items-center gap-2 text-sm text-text-muted">
+        <input
+          type="checkbox"
+          checked={mostrarTodosInicial}
+          onChange={(e) => alternarMostrarTodos(e.target.checked)}
+          className="h-4 w-4"
+        />
+        Mostrar inactivas
+      </label>
+
+      <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
       <table className="w-full min-w-[700px] text-left text-sm">
         <thead className="border-b border-border text-xs uppercase tracking-wider text-text-muted">
           <tr>
@@ -69,22 +81,15 @@ export function PromocionesTable({ promociones }: { promociones: Promocion[] }) 
                   >
                     <Pencil size={15} />
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => eliminar(p.id, p.nombre)}
-                    disabled={eliminando === p.id}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 hover:bg-red-500/10 disabled:opacity-50"
-                    aria-label="Desactivar"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  <AccionesMenu activo={p.activo} nombre={p.nombre} onCambiarActivo={(activo) => cambiarActivo(p.id, activo)} />
                 </div>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      {promociones.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No hay promociones registradas.</p>}
+        {promociones.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No hay promociones registradas.</p>}
+      </div>
     </div>
   );
 }

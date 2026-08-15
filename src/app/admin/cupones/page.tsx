@@ -3,8 +3,14 @@ import { Plus } from "lucide-react";
 import { getTodosLosCuponesAdmin } from "@/server/services/cupon.service";
 import { CuponesTable } from "./cupones-table";
 
-export default async function AdminCuponesPage() {
-  const cupones = await getTodosLosCuponesAdmin();
+interface Props {
+  searchParams: Promise<{ todos?: string }>;
+}
+
+export default async function AdminCuponesPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const mostrarTodos = params.todos === "1";
+  const cupones = await getTodosLosCuponesAdmin(!mostrarTodos);
 
   return (
     <div className="flex flex-col gap-6">
@@ -21,7 +27,7 @@ export default async function AdminCuponesPage() {
         </Link>
       </div>
 
-      <CuponesTable cupones={cupones} />
+      <CuponesTable cupones={cupones} mostrarTodosInicial={mostrarTodos} />
     </div>
   );
 }

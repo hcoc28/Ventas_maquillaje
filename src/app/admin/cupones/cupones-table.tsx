@@ -1,36 +1,48 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
+import { AccionesMenu } from "@/components/admin/acciones-menu";
 import type { getTodosLosCuponesAdmin } from "@/server/services/cupon.service";
 
 type Cupon = Awaited<ReturnType<typeof getTodosLosCuponesAdmin>>[number];
 
-export function CuponesTable({ cupones }: { cupones: Cupon[] }) {
+export function CuponesTable({ cupones, mostrarTodosInicial }: { cupones: Cupon[]; mostrarTodosInicial: boolean }) {
   const router = useRouter();
   const { mostrar } = useToast();
-  const [eliminando, setEliminando] = useState<number | null>(null);
 
-  async function eliminar(id: number, codigo: string) {
-    if (!confirm(`¿Desactivar el cupón "${codigo}"?`)) return;
-    setEliminando(id);
+  function alternarMostrarTodos(mostrarTodos: boolean) {
+    const params = new URLSearchParams();
+    if (mostrarTodos) params.set("todos", "1");
+    router.push(`/admin/cupones?${params.toString()}`);
+  }
+
+  async function cambiarActivo(id: number, activo: boolean) {
     try {
-      await axios.delete(`/api/admin/cupones/${id}`);
-      mostrar("Cupón desactivado.");
+      await axios.patch(`/api/admin/cupones/${id}`, { activo });
+      mostrar(activo ? "Cupón activado." : "Cupón desactivado.");
       router.refresh();
     } catch {
-      mostrar("No se pudo desactivar el cupón.", "error");
-    } finally {
-      setEliminando(null);
+      mostrar("No se pudo actualizar el cupón.", "error");
     }
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
+    <div className="flex flex-col gap-4">
+      <label className="flex items-center gap-2 text-sm text-text-muted">
+        <input
+          type="checkbox"
+          checked={mostrarTodosInicial}
+          onChange={(e) => alternarMostrarTodos(e.target.checked)}
+          className="h-4 w-4"
+        />
+        Mostrar inactivos
+      </label>
+
+      <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
       <table className="w-full min-w-[700px] text-left text-sm">
         <thead className="border-b border-border text-xs uppercase tracking-wider text-text-muted">
           <tr>
@@ -72,22 +84,15 @@ export function CuponesTable({ cupones }: { cupones: Cupon[] }) {
                   >
                     <Pencil size={15} />
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => eliminar(c.id, c.codigo)}
-                    disabled={eliminando === c.id}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 hover:bg-red-500/10 disabled:opacity-50"
-                    aria-label="Desactivar"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  <AccionesMenu activo={c.activo} nombre={c.codigo} onCambiarActivo={(activo) => cambiarActivo(c.id, activo)} />
                 </div>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      {cupones.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No hay cupones registrados.</p>}
+        {cupones.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No hay cupones registrados.</p>}
+      </div>
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import * as promocionRepo from "@/server/repositories/promocion.repository";
 import type { PromocionAdminInput } from "@/validators/admin";
 
-export async function getTodasLasPromocionesAdmin() {
-  return promocionRepo.getTodasLasPromociones();
+export async function getTodasLasPromocionesAdmin(soloActivas?: boolean) {
+  return promocionRepo.getTodasLasPromociones(soloActivas);
 }
 
 export async function getPromocionPorId(id: number) {
@@ -19,4 +19,8 @@ export async function actualizarPromocion(id: number, data: PromocionAdminInput)
 
 export async function eliminarPromocion(id: number) {
   return promocionRepo.eliminarPromocion(id);
+}
+
+export async function activarPromocion(id: number) {
+  return promocionRepo.activarPromocion(id);
 }

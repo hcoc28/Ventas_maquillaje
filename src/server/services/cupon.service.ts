@@ -30,8 +30,8 @@ export async function validarCupon(codigo: string): Promise<ResultadoValidacionC
   };
 }
 
-export async function getTodosLosCuponesAdmin() {
-  return cuponRepo.getTodosLosCupones();
+export async function getTodosLosCuponesAdmin(soloActivos?: boolean) {
+  return cuponRepo.getTodosLosCupones(soloActivos);
 }
 
 export async function getCuponPorIdAdmin(id: number) {
@@ -59,4 +59,8 @@ export async function actualizarCuponAdmin(id: number, data: CuponAdminInput) {
 
 export async function desactivarCuponAdmin(id: number) {
   return cuponRepo.desactivarCupon(id);
+}
+
+export async function activarCuponAdmin(id: number) {
+  return cuponRepo.activarCupon(id);
 }
