@@ -1,9 +1,15 @@
 import { listarOpinionesAdmin } from "@/server/services/opinion.service";
 import { OpinionesTable } from "./opiniones-table";
 
-export default async function AdminOpinionesPage() {
-  const opiniones = await listarOpinionesAdmin();
-  const pendientes = opiniones.filter((o) => !o.aprobada).length;
+interface Props {
+  searchParams: Promise<{ pendientes?: string }>;
+}
+
+export default async function AdminOpinionesPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const soloPendientes = params.pendientes === "1";
+  const opiniones = await listarOpinionesAdmin(soloPendientes);
+  const pendientes = soloPendientes ? opiniones.length : opiniones.filter((o) => !o.aprobada).length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -17,7 +23,7 @@ export default async function AdminOpinionesPage() {
         )}
       </div>
 
-      <OpinionesTable opiniones={opiniones} />
+      <OpinionesTable opiniones={opiniones} soloPendientes={soloPendientes} />
     </div>
   );
 }

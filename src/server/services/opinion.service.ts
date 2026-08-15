@@ -24,8 +24,8 @@ export async function crearOpinion(
   return { exitoso: true, valor: true };
 }
 
-export async function listarOpinionesAdmin() {
-  return opinionRepo.getTodasLasOpinionesAdmin();
+export async function listarOpinionesAdmin(soloPendientes = false) {
+  return opinionRepo.getTodasLasOpinionesAdmin(soloPendientes);
 }
 
 export async function aprobarOpinionAdmin(id: number) {

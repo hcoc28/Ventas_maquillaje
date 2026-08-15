@@ -33,8 +33,9 @@ export async function crearOpinion(productId: number, userId: number, calificaci
   });
 }
 
-export async function getTodasLasOpinionesAdmin() {
+export async function getTodasLasOpinionesAdmin(soloPendientes = false) {
   return prisma.review.findMany({
+    where: soloPendientes ? { aprobada: false } : undefined,
     include: {
       product: { select: { nombre: true, slug: true } },
       user: { select: { nombre: true, apellido: true } },

@@ -103,7 +103,7 @@ export async function getEstadisticasDashboard() {
     ultimosMensajesContacto,
   ] = await Promise.all([
     prisma.product.count({ where: { activo: true } }),
-    prisma.user.count({ where: { activo: true } }),
+    prisma.user.count({ where: { activo: true, esInvitado: false } }),
     prisma.order.count(),
     prisma.order.count({ where: { estado: "Pendiente" } }),
     prisma.order.aggregate({ _sum: { total: true }, where: { estado: { not: "Cancelado" } } }),

@@ -10,9 +10,13 @@ import type { listarOpinionesAdmin } from "@/server/services/opinion.service";
 
 type Opinion = Awaited<ReturnType<typeof listarOpinionesAdmin>>[number];
 
-export function OpinionesTable({ opiniones }: { opiniones: Opinion[] }) {
+export function OpinionesTable({ opiniones, soloPendientes }: { opiniones: Opinion[]; soloPendientes: boolean }) {
   const router = useRouter();
   const { mostrar } = useToast();
+
+  function alternarFiltro(valor: boolean) {
+    router.push(valor ? "/admin/opiniones?pendientes=1" : "/admin/opiniones");
+  }
   const [procesando, setProcesando] = useState<number | null>(null);
   const [opinionConfirmacion, setOpinionConfirmacion] = useState<Opinion | null>(null);
 
@@ -45,7 +49,18 @@ export function OpinionesTable({ opiniones }: { opiniones: Opinion[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
+    <div className="flex flex-col gap-4">
+      <label className="flex w-fit items-center gap-2 text-sm text-text-muted">
+        <input
+          type="checkbox"
+          checked={soloPendientes}
+          onChange={(e) => alternarFiltro(e.target.checked)}
+          className="h-4 w-4 rounded border-border"
+        />
+        Mostrar solo pendientes
+      </label>
+
+      <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
       <table className="w-full min-w-[800px] text-left text-sm">
         <thead className="border-b border-border text-xs uppercase tracking-wider text-text-muted">
           <tr>
@@ -107,6 +122,7 @@ export function OpinionesTable({ opiniones }: { opiniones: Opinion[] }) {
         </tbody>
       </table>
       {opiniones.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No hay opiniones registradas.</p>}
+      </div>
       <ConfirmacionModal
         abierto={opinionConfirmacion !== null}
         titulo="Eliminar opinión"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { MessageCircle } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
@@ -9,7 +10,7 @@ import { ESTADOS_PEDIDO } from "@/validators/admin";
 import { construirEnlaceNotificacionEstado } from "@/server/services/whatsapp.service";
 import type { getTodosLosPedidosAdmin } from "@/server/services/pedido.service";
 
-type Pedido = Awaited<ReturnType<typeof getTodosLosPedidosAdmin>>[number];
+type Resultado = Awaited<ReturnType<typeof getTodosLosPedidosAdmin>>;
 
 const colorPorEstado: Record<string, string> = {
   Pendiente: "bg-amber-500/10 text-amber-600",
@@ -19,10 +20,26 @@ const colorPorEstado: Record<string, string> = {
   Cancelado: "bg-red-500/10 text-red-600",
 };
 
-export function PedidosTable({ pedidos }: { pedidos: Pedido[] }) {
+export function PedidosTable({ resultado, estadoInicial }: { resultado: Resultado; estadoInicial: string }) {
+  const router = useRouter();
   const { mostrar } = useToast();
+  const pedidos = resultado.items;
   const [estados, setEstados] = useState(new Map(pedidos.map((p) => [p.id, p.estado])));
   const [guardando, setGuardando] = useState<number | null>(null);
+
+  function irAPagina(p: number) {
+    const params = new URLSearchParams();
+    if (estadoInicial) params.set("estado", estadoInicial);
+    params.set("pagina", String(p));
+    router.push(`/admin/pedidos?${params.toString()}`);
+  }
+
+  function filtrarPorEstado(estado: string) {
+    const params = new URLSearchParams();
+    if (estado) params.set("estado", estado);
+    params.set("pagina", "1");
+    router.push(`/admin/pedidos?${params.toString()}`);
+  }
 
   async function actualizarEstado(id: number, estado: string) {
     setGuardando(id);
@@ -38,7 +55,25 @@ export function PedidosTable({ pedidos }: { pedidos: Pedido[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <select
+          value={estadoInicial}
+          onChange={(e) => filtrarPorEstado(e.target.value)}
+          aria-label="Filtrar por estado"
+          className="rounded-full border border-border bg-surface px-4 py-2 text-sm outline-none focus:border-accent-strong"
+        >
+          <option value="">Todos los estados</option>
+          {ESTADOS_PEDIDO.map((e) => (
+            <option key={e} value={e}>
+              {e}
+            </option>
+          ))}
+        </select>
+        <span className="text-sm text-text-muted">{resultado.totalRegistros} pedidos</span>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl bg-surface shadow-[var(--shadow-soft)]">
       <table className="w-full min-w-[780px] text-left text-sm">
         <thead className="border-b border-border text-xs uppercase tracking-wider text-text-muted">
           <tr>
@@ -102,7 +137,29 @@ export function PedidosTable({ pedidos }: { pedidos: Pedido[] }) {
           })}
         </tbody>
       </table>
-      {pedidos.length === 0 && <p className="py-10 text-center text-sm text-text-muted">Aún no hay pedidos.</p>}
+        {pedidos.length === 0 && <p className="py-10 text-center text-sm text-text-muted">Aún no hay pedidos.</p>}
+      </div>
+
+      {resultado.totalPaginas > 1 && (
+        <div className="flex justify-center gap-2">
+          {Array.from({ length: resultado.totalPaginas }, (_, i) => i + 1)
+            .filter((p) => Math.abs(p - resultado.pagina) <= 2 || p === 1 || p === resultado.totalPaginas)
+            .map((p, idx, arr) => (
+              <span key={p} className="flex items-center gap-2">
+                {idx > 0 && arr[idx - 1] !== p - 1 && <span className="text-text-muted">…</span>}
+                <button
+                  type="button"
+                  onClick={() => irAPagina(p)}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm transition ${
+                    p === resultado.pagina ? "bg-black text-white" : "hover:bg-surface-muted"
+                  }`}
+                >
+                  {p}
+                </button>
+              </span>
+            ))}
+        </div>
+      )}
     </div>
   );
 }

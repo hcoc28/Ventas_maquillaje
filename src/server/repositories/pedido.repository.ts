@@ -22,11 +22,28 @@ export async function getPedidoPorNumero(numeroPedido: string) {
   return prisma.order.findUnique({ where: { numeroPedido } });
 }
 
-export async function getTodosLosPedidos() {
-  return prisma.order.findMany({
-    include: { details: true, user: { select: { nombre: true, apellido: true, email: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+export interface FiltroPedidosAdmin {
+  pagina: number;
+  tamanoPagina: number;
+  estado?: string;
+}
+
+export async function getTodosLosPedidos(filtro: FiltroPedidosAdmin) {
+  const { pagina, tamanoPagina, estado } = filtro;
+  const where = estado ? { estado } : undefined;
+
+  const [total, items] = await Promise.all([
+    prisma.order.count({ where }),
+    prisma.order.findMany({
+      where,
+      include: { details: true, user: { select: { nombre: true, apellido: true, email: true } } },
+      orderBy: { createdAt: "desc" },
+      skip: (pagina - 1) * tamanoPagina,
+      take: tamanoPagina,
+    }),
+  ]);
+
+  return { items, total };
 }
 
 export async function actualizarEstadoPedido(id: number, estado: string) {

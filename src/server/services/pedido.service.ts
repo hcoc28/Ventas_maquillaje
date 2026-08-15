@@ -49,6 +49,7 @@ async function obtenerOCrearUsuarioParaPedido(input: CrearPedidoInput, userId: n
     passwordHash,
     telefono: input.telefonoContacto,
     roleNombre: "Cliente",
+    esInvitado: true,
   });
 
   return usuario.id;
@@ -265,13 +266,21 @@ export async function getPedidosPorUsuario(userId: number): Promise<PedidoResume
   });
 }
 
-export async function getTodosLosPedidosAdmin() {
-  const pedidos = await pedidoRepo.getTodosLosPedidos();
-  return pedidos.map((p) => ({
-    ...mapearPedido(p),
-    clienteNombre: `${p.user.nombre} ${p.user.apellido}`,
-    clienteEmail: p.user.email,
-  }));
+export async function getTodosLosPedidosAdmin(filtro: { pagina: number; tamanoPagina: number; estado?: string }) {
+  const { pagina, tamanoPagina } = filtro;
+  const { items, total } = await pedidoRepo.getTodosLosPedidos(filtro);
+
+  return {
+    items: items.map((p) => ({
+      ...mapearPedido(p),
+      clienteNombre: `${p.user.nombre} ${p.user.apellido}`,
+      clienteEmail: p.user.email,
+    })),
+    pagina,
+    tamanoPagina,
+    totalRegistros: total,
+    totalPaginas: Math.max(Math.ceil(total / tamanoPagina), 1),
+  };
 }
 
 export async function actualizarEstadoPedido(id: number, estado: string) {

@@ -15,6 +15,7 @@ export async function crearUsuario(data: {
   passwordHash: string;
   telefono: string;
   roleNombre: string;
+  esInvitado?: boolean;
 }) {
   const role = await prisma.role.findUniqueOrThrow({ where: { nombre: data.roleNombre } });
   return prisma.user.create({
@@ -25,6 +26,7 @@ export async function crearUsuario(data: {
       passwordHash: data.passwordHash,
       telefono: data.telefono,
       roleId: role.id,
+      esInvitado: data.esInvitado ?? false,
     },
   });
 }
@@ -38,6 +40,7 @@ export async function actualizarPerfil(
 
 export async function getTodosLosUsuarios() {
   return prisma.user.findMany({
+    where: { esInvitado: false },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
