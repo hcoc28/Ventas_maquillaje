@@ -24,15 +24,21 @@ export async function PATCH(_request: NextRequest, { params }: { params: Promise
 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const session = await auth();
+  if (session?.user?.role !== "Administrador") {
+    return NextResponse.json({ mensaje: "Solo un Administrador puede eliminar permanentemente." }, { status: 403 });
+  }
+
   await eliminarOpinionAdmin(Number(id));
 
-  const session = await auth();
   await registrarAuditoria({
     entidad: "Opinion",
     entidadId: Number(id),
     accion: "eliminar",
     userId: session?.user?.id ? Number(session.user.id) : null,
   });
+
+  revalidatePath("/producto/[slug]", "page");
 
   return NextResponse.json({ ok: true });
 }

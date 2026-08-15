@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { getTodosLosSuscriptoresAdmin } from "@/server/services/newsletter.service";
+import { registrarAuditoria } from "@/server/services/log.service";
 
 function escaparCsv(valor: string): string {
   if (/[",\n]/.test(valor)) return `"${valor.replace(/"/g, '""')}"`;
@@ -7,7 +9,19 @@ function escaparCsv(valor: string): string {
 }
 
 export async function GET() {
+  const session = await auth();
+  if (session?.user?.role !== "Administrador") {
+    return NextResponse.json({ mensaje: "Solo un Administrador puede exportar la lista de suscriptores." }, { status: 403 });
+  }
+
   const suscriptores = await getTodosLosSuscriptoresAdmin();
+
+  await registrarAuditoria({
+    entidad: "NewsletterSubscriber",
+    entidadId: 0,
+    accion: "exportar",
+    userId: session?.user?.id ? Number(session.user.id) : null,
+  });
 
   const filas = [
     ["Correo", "Estado", "Fecha de suscripción"].join(","),

@@ -33,11 +33,17 @@ const RUTAS_LIMITADAS: { ruta: string; limite: number; ventanaMs: number }[] = [
   { ruta: "/api/auth/recuperar", limite: 5, ventanaMs: 60_000 },
   { ruta: "/api/auth/restablecer", limite: 8, ventanaMs: 60_000 },
   { ruta: "/api/cuenta/password", limite: 8, ventanaMs: 60_000 },
+  { ruta: "/api/cuenta/perfil", limite: 10, ventanaMs: 60_000 },
   { ruta: "/api/newsletter", limite: 5, ventanaMs: 60_000 },
   { ruta: "/api/contacto", limite: 5, ventanaMs: 60_000 },
   { ruta: "/api/pedidos", limite: 10, ventanaMs: 60_000 },
   { ruta: "/api/favoritos/alternar", limite: 30, ventanaMs: 60_000 },
   { ruta: "/api/productos/opiniones", limite: 10, ventanaMs: 60_000 },
+  // Sin autenticación y valida códigos de cupón — sin límite, alguien podría probar el
+  // codespace completo de cupones gratis solo llamando este endpoint en bucle.
+  { ruta: "/api/carrito/calcular", limite: 30, ventanaMs: 60_000 },
+  // Sube archivos a Cloudinary (cuota facturable) — límite más estricto que el resto del panel.
+  { ruta: "/api/admin/upload", limite: 20, ventanaMs: 60_000 },
 ];
 
 export default auth(async (request) => {
@@ -55,7 +61,12 @@ export default auth(async (request) => {
     }
   }
 
-  if ((esRutaCuenta || esRutaAdmin) && !request.auth) {
+  // Una cuenta desactivada (o cuyo rol cambió) llega aquí con un JWT que sigue siendo válido
+  // pero cuyo callback jwt() lo vació (ver auth.config.ts) — user.id queda como cadena vacía en
+  // vez de request.auth ser null, así que hay que revisarlo explícitamente.
+  const sinSesionValida = !request.auth || !request.auth.user?.id;
+
+  if ((esRutaCuenta || esRutaAdmin) && sinSesionValida) {
     if (esApi) return NextResponse.json({ mensaje: "No autenticado." }, { status: 401 });
     const url = new URL("/cuenta/iniciar-sesion", request.nextUrl.origin);
     url.searchParams.set("callbackUrl", pathname);
@@ -65,6 +76,18 @@ export default auth(async (request) => {
   if (esRutaAdmin && request.auth?.user.role !== "Administrador" && request.auth?.user.role !== "Empleado") {
     if (esApi) return NextResponse.json({ mensaje: "No autorizado." }, { status: 403 });
     return NextResponse.redirect(new URL("/", request.nextUrl.origin));
+  }
+
+  // Respaldo general para el resto de mutaciones de /api/admin/** (los PATCH/PUT/DELETE de rutas
+  // dinámicas como /api/admin/productos/[id] no se pueden listar una por una en RUTAS_LIMITADAS).
+  // Ya están detrás de sesión Administrador/Empleado, así que esto es solo una red de seguridad
+  // contra una sesión comprometida o un cliente desbocado, no protección anti-fuerza-bruta.
+  if (pathname.startsWith("/api/admin/") && request.method !== "GET" && !rutaLimitada) {
+    const ip = obtenerIpCliente(request);
+    const permitido = await rateLimit(`admin-mutacion:${ip}`, 60, 60_000);
+    if (!permitido) {
+      return NextResponse.json({ mensaje: "Demasiadas solicitudes. Intenta de nuevo en unos minutos." }, { status: 429 });
+    }
   }
 
   return NextResponse.next();
@@ -80,10 +103,12 @@ export const config = {
     "/api/auth/recuperar",
     "/api/auth/restablecer",
     "/api/cuenta/password",
+    "/api/cuenta/perfil",
     "/api/newsletter",
     "/api/contacto",
     "/api/pedidos",
     "/api/favoritos/alternar",
     "/api/productos/opiniones",
+    "/api/carrito/calcular",
   ],
 };

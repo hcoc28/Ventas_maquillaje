@@ -54,10 +54,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const session = await auth();
+  if (session?.user?.role !== "Administrador") {
+    return NextResponse.json({ mensaje: "Solo un Administrador puede eliminar permanentemente." }, { status: 403 });
+  }
+
   try {
     await eliminarCuponAdmin(Number(id));
 
-    const session = await auth();
     await registrarAuditoria({
       entidad: "Cupon",
       entidadId: Number(id),

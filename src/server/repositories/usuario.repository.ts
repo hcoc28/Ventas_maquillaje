@@ -54,7 +54,11 @@ export async function getTodosLosUsuarios() {
 }
 
 export async function actualizarEstadoUsuario(userId: number, activo: boolean) {
-  return prisma.user.update({ where: { id: userId }, data: { activo } });
+  return prisma.user.update({
+    where: { id: userId },
+    data: { activo },
+    select: { id: true, nombre: true, apellido: true, email: true, activo: true },
+  });
 }
 
 export async function actualizarPassword(userId: number, passwordHash: string) {

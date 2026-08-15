@@ -11,7 +11,7 @@ export async function registrarActividad(userId: number | null, accion: string, 
 export async function registrarAuditoria(data: {
   entidad: string;
   entidadId: number;
-  accion: "crear" | "actualizar" | "eliminar";
+  accion: "crear" | "actualizar" | "eliminar" | "exportar";
   valoresPrevios?: unknown;
   valoresNuevos?: unknown;
   userId: number | null;

@@ -40,7 +40,9 @@ export async function actualizarPromocion(id: number, data: PromocionAdminInput)
 }
 
 export async function eliminarPromocion(id: number) {
-  await prisma.product.updateMany({ where: { promotionId: id }, data: { promotionId: null } });
+  // No se desvinculan los productos aquí: promocionVigente() ya exige promotion.activo === true,
+  // así que desactivar basta para que el descuento deje de aplicarse — y permite reactivarla sin
+  // tener que reasignar cada producto a mano. Solo el borrado permanente desvincula de verdad.
   return prisma.promotion.update({ where: { id }, data: { activo: false, deletedAt: new Date() } });
 }
 

@@ -1,13 +1,21 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
+// 'unsafe-eval' solo hace falta en desarrollo (React lo usa para reconstruir stack traces del
+// servidor en el navegador) — ni React ni Next.js lo necesitan en producción por defecto.
+const esDesarrollo = process.env.NODE_ENV === "development";
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
+  `script-src 'self' 'unsafe-inline'${esDesarrollo ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' https://images.unsplash.com https://res.cloudinary.com https://www.google-analytics.com data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self' https://www.google-analytics.com https://*.ingest.sentry.io",
+  // GA4 a veces manda los beacons a un endpoint regional (ej. region1.google-analytics.com) en
+  // vez del dominio principal, y el DSN de Sentry ahora suele incluir la región (ej.
+  // oXXXX.ingest.us.sentry.io) — sin estos patrones, ambos quedarían bloqueados en silencio.
+  "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io",
+  "object-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
