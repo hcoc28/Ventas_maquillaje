@@ -110,3 +110,9 @@ export const estadoAdminSchema = z.object({
 });
 
 export type EstadoAdminInput = z.infer<typeof estadoAdminSchema>;
+
+export const configuracionAdminSchema = z.object({
+  mostrarFiltroMarcas: z.boolean(),
+});
+
+export type ConfiguracionAdminInput = z.infer<typeof configuracionAdminSchema>;

@@ -6,7 +6,6 @@ import axios from "axios";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { NavbarOscura } from "@/components/layout/navbar-theme-context";
-import { siteConfig } from "@/config/site";
 import type { CategoriaDto, MarcaDto, OrdenCatalogo, PagedResult, ProductoResumen } from "@/types/catalogo";
 
 const OPCIONES_ORDEN: { valor: OrdenCatalogo; etiqueta: string }[] = [
@@ -32,6 +31,7 @@ interface Props {
     orden: OrdenCatalogo;
     pagina: number;
   };
+  mostrarFiltroMarcas: boolean;
 }
 
 /** Identifica una combinación de filtros de búsqueda (todo menos la página). */
@@ -39,7 +39,7 @@ function claveBusqueda(f: { q: string; categorias: string[]; marcas: string[]; o
   return JSON.stringify([f.q, f.categorias, f.marcas, f.oferta, f.stock, f.orden]);
 }
 
-export function CatalogoClient({ categorias, marcas, resultadoInicial, filtroInicial }: Props) {
+export function CatalogoClient({ categorias, marcas, resultadoInicial, filtroInicial, mostrarFiltroMarcas }: Props) {
   const router = useRouter();
 
   const [resultado, setResultado] = useState(resultadoInicial);
@@ -154,7 +154,7 @@ export function CatalogoClient({ categorias, marcas, resultadoInicial, filtroIni
               ))}
             </FiltroBloque>
 
-            {siteConfig.mostrarFiltroMarcas && (
+            {mostrarFiltroMarcas && (
               <FiltroBloque titulo="Marcas">
                 {marcas.map((m) => (
                   <label key={m.id} className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-text-muted hover:text-foreground">

@@ -15,6 +15,7 @@ import {
   Star,
   MessageSquare,
   Mail,
+  Settings,
   ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ const links = [
   { href: "/admin/contacto", label: "Contacto", icon: MessageSquare },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/usuarios", label: "Usuarios", icon: Users, soloAdmin: true },
+  { href: "/admin/configuracion", label: "Configuración", icon: Settings, soloAdmin: true },
 ];
 
 export function AdminSidebar({ rol }: { rol: string }) {

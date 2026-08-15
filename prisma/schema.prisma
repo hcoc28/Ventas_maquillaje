@@ -342,3 +342,12 @@ model AuditLog {
 
   @@map("audit_logs")
 }
+
+/// Fila unica (id=1) con las opciones de configuracion editables desde el panel admin.
+model SiteSetting {
+  id                 Int      @id @default(1)
+  mostrarFiltroMarcas Boolean @default(true) @map("mostrar_filtro_marcas")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}

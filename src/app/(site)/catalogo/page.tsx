@@ -3,6 +3,7 @@ import { CatalogoClient } from "@/components/catalogo/catalogo-client";
 import { getCategoriasActivas } from "@/server/services/categoria.service";
 import { getMarcasActivas } from "@/server/services/marca.service";
 import { buscarProductos } from "@/server/services/producto.service";
+import { getConfiguracion } from "@/server/services/configuracion.service";
 import type { OrdenCatalogo } from "@/types/catalogo";
 
 export const metadata: Metadata = {
@@ -46,7 +47,7 @@ export default async function CatalogoPage({ searchParams }: CatalogoPageProps) 
   const orden = (ORDENES_VALIDOS as string[]).includes(ordenParam) ? (ordenParam as OrdenCatalogo) : "relevancia";
   const pagina = params.pagina ? Number(params.pagina) : 1;
 
-  const [categorias, marcas, resultadoInicial] = await Promise.all([
+  const [categorias, marcas, resultadoInicial, configuracion] = await Promise.all([
     getCategoriasActivas(),
     getMarcasActivas(),
     buscarProductos({
@@ -59,6 +60,7 @@ export default async function CatalogoPage({ searchParams }: CatalogoPageProps) 
       pagina,
       tamanoPagina: 12,
     }),
+    getConfiguracion(),
   ]);
 
   return (
@@ -67,6 +69,7 @@ export default async function CatalogoPage({ searchParams }: CatalogoPageProps) 
       marcas={marcas}
       resultadoInicial={resultadoInicial}
       filtroInicial={{ q, categorias: categoriasSel, marcas: marcasSel, oferta, stock, orden, pagina }}
+      mostrarFiltroMarcas={configuracion.mostrarFiltroMarcas}
     />
   );
 }
