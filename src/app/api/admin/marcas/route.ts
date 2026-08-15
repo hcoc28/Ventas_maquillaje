@@ -2,13 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { marcaAdminSchema } from "@/validators/admin";
-import { crearMarca, getTodasLasMarcasAdmin } from "@/server/services/marca.service";
+import { crearMarca } from "@/server/services/marca.service";
 import { registrarAuditoria } from "@/server/services/log.service";
-
-export async function GET() {
-  const marcas = await getTodasLasMarcasAdmin();
-  return NextResponse.json(marcas);
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);

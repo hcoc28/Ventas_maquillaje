@@ -2,13 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { promocionAdminSchema } from "@/validators/admin";
-import { crearPromocion, getTodasLasPromocionesAdmin } from "@/server/services/promocion.service";
+import { crearPromocion } from "@/server/services/promocion.service";
 import { registrarAuditoria } from "@/server/services/log.service";
-
-export async function GET() {
-  const promociones = await getTodasLasPromocionesAdmin();
-  return NextResponse.json(promociones);
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);

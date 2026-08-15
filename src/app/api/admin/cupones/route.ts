@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { cuponAdminSchema } from "@/validators/admin";
-import { crearCuponAdmin, getTodosLosCuponesAdmin } from "@/server/services/cupon.service";
+import { crearCuponAdmin } from "@/server/services/cupon.service";
 import { registrarAuditoria } from "@/server/services/log.service";
-
-export async function GET() {
-  const cupones = await getTodosLosCuponesAdmin();
-  return NextResponse.json(cupones);
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);

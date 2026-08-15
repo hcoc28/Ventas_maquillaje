@@ -2,17 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { productoAdminSchema } from "@/validators/admin";
-import { crearProductoAdmin, getTodosLosProductosAdmin } from "@/server/services/producto.service";
+import { crearProductoAdmin } from "@/server/services/producto.service";
 import { registrarAuditoria } from "@/server/services/log.service";
-
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const pagina = Math.max(Number(searchParams.get("pagina")) || 1, 1);
-  const busqueda = searchParams.get("q")?.trim() || undefined;
-
-  const productos = await getTodosLosProductosAdmin({ pagina, tamanoPagina: 20, busqueda });
-  return NextResponse.json(productos);
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);

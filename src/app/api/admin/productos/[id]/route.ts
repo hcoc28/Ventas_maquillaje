@@ -7,16 +7,8 @@ import {
   actualizarProductoAdmin,
   eliminarProductoAdmin,
   eliminarProductoPermanenteAdmin,
-  getProductoPorIdAdmin,
 } from "@/server/services/producto.service";
 import { registrarAuditoria } from "@/server/services/log.service";
-
-export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const producto = await getProductoPorIdAdmin(Number(id));
-  if (!producto) return NextResponse.json({ mensaje: "Producto no encontrado." }, { status: 404 });
-  return NextResponse.json(producto);
-}
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

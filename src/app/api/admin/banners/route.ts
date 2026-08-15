@@ -2,13 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { bannerAdminSchema } from "@/validators/admin";
-import { crearBanner, getTodosLosBannersAdmin } from "@/server/services/banner.service";
+import { crearBanner } from "@/server/services/banner.service";
 import { registrarAuditoria } from "@/server/services/log.service";
-
-export async function GET() {
-  const banners = await getTodosLosBannersAdmin();
-  return NextResponse.json(banners);
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);

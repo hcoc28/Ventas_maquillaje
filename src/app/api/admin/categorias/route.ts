@@ -2,13 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { categoriaAdminSchema } from "@/validators/admin";
-import { crearCategoria, getTodasLasCategoriasAdmin } from "@/server/services/categoria.service";
+import { crearCategoria } from "@/server/services/categoria.service";
 import { registrarAuditoria } from "@/server/services/log.service";
-
-export async function GET() {
-  const categorias = await getTodasLasCategoriasAdmin();
-  return NextResponse.json(categorias);
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
