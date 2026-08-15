@@ -3,14 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { MoreVertical, Power, Trash2 } from "lucide-react";
+import { ConfirmacionModal } from "@/components/admin/confirmacion-modal";
 
 interface Props {
   activo: boolean;
   nombre: string;
+  accionDesactivar?: string;
   onCambiarActivo: (activo: boolean) => Promise<void> | void;
 }
 
-export function AccionesMenu({ activo, nombre, onCambiarActivo }: Props) {
+export function AccionesMenu({ activo, nombre, accionDesactivar = "Eliminar", onCambiarActivo }: Props) {
   const [abierto, setAbierto] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
   const [procesando, setProcesando] = useState(false);
@@ -59,7 +61,8 @@ export function AccionesMenu({ activo, nombre, onCambiarActivo }: Props) {
     setProcesando(true);
     try {
       await onCambiarActivo(false);
-      cerrar();
+      setConfirmando(false);
+      setAbierto(false);
     } finally {
       setProcesando(false);
     }
@@ -94,34 +97,16 @@ export function AccionesMenu({ activo, nombre, onCambiarActivo }: Props) {
             style={{ position: "fixed", top: posicion.top, right: posicion.right }}
             className="z-50 w-60 rounded-xl border border-border bg-surface p-2 text-left shadow-[var(--shadow-strong)]"
           >
-            {confirmando ? (
-              <div className="flex flex-col gap-2 p-1.5">
-                <p className="text-xs text-text-muted">¿Estás segura/o de desactivar &quot;{nombre}&quot;?</p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setConfirmando(false)}
-                    className="flex-1 rounded-full border border-border py-1.5 text-xs font-semibold hover:bg-surface-muted"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    disabled={procesando}
-                    onClick={confirmarDesactivar}
-                    className="flex-1 rounded-full bg-red-600 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-50"
-                  >
-                    Sí, desactivar
-                  </button>
-                </div>
-              </div>
-            ) : activo ? (
+            {activo ? (
               <button
                 type="button"
-                onClick={() => setConfirmando(true)}
+                onClick={() => {
+                  setAbierto(false);
+                  setConfirmando(true);
+                }}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-500/10"
               >
-                <Trash2 size={14} /> Desactivar
+                <Trash2 size={14} /> {accionDesactivar}
               </button>
             ) : (
               <button
@@ -136,6 +121,17 @@ export function AccionesMenu({ activo, nombre, onCambiarActivo }: Props) {
           </div>,
           document.body
         )}
+      <ConfirmacionModal
+        abierto={confirmando}
+        titulo={`${accionDesactivar} "${nombre}"`}
+        descripcion="Esta acción lo dejará inactivo y ya no se mostrará en la tienda. Podrás volver a activarlo desde la opción de mostrar inactivos."
+        textoConfirmar={accionDesactivar}
+        procesando={procesando}
+        onCerrar={() => {
+          if (!procesando) setConfirmando(false);
+        }}
+        onConfirmar={confirmarDesactivar}
+      />
     </>
   );
 }

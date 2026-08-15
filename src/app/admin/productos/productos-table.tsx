@@ -62,7 +62,7 @@ export function ProductosTable({
   async function cambiarActivo(id: number, activo: boolean) {
     try {
       await axios.patch(`/api/admin/productos/${id}`, { activo });
-      mostrar(activo ? "Producto activado." : "Producto desactivado.");
+      mostrar(activo ? "Producto activado." : "Producto eliminado del catálogo.");
       router.refresh();
     } catch {
       mostrar("No se pudo actualizar el producto.", "error");

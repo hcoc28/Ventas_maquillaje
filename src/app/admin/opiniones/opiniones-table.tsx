@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Check, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
+import { ConfirmacionModal } from "@/components/admin/confirmacion-modal";
 import type { listarOpinionesAdmin } from "@/server/services/opinion.service";
 
 type Opinion = Awaited<ReturnType<typeof listarOpinionesAdmin>>[number];
@@ -13,6 +14,7 @@ export function OpinionesTable({ opiniones }: { opiniones: Opinion[] }) {
   const router = useRouter();
   const { mostrar } = useToast();
   const [procesando, setProcesando] = useState<number | null>(null);
+  const [opinionConfirmacion, setOpinionConfirmacion] = useState<Opinion | null>(null);
 
   async function aprobar(id: number) {
     setProcesando(id);
@@ -27,12 +29,13 @@ export function OpinionesTable({ opiniones }: { opiniones: Opinion[] }) {
     }
   }
 
-  async function eliminar(id: number) {
-    if (!confirm("¿Eliminar esta opinión? Esta acción no se puede deshacer.")) return;
-    setProcesando(id);
+  async function eliminar() {
+    if (!opinionConfirmacion) return;
+    setProcesando(opinionConfirmacion.id);
     try {
-      await axios.delete(`/api/admin/opiniones/${id}`);
+      await axios.delete(`/api/admin/opiniones/${opinionConfirmacion.id}`);
       mostrar("Opinión eliminada.");
+      setOpinionConfirmacion(null);
       router.refresh();
     } catch {
       mostrar("No se pudo eliminar la opinión.", "error");
@@ -90,7 +93,7 @@ export function OpinionesTable({ opiniones }: { opiniones: Opinion[] }) {
                   )}
                   <button
                     type="button"
-                    onClick={() => eliminar(o.id)}
+                    onClick={() => setOpinionConfirmacion(o)}
                     disabled={procesando === o.id}
                     className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 hover:bg-red-500/10 disabled:opacity-50"
                     aria-label="Eliminar"
@@ -104,6 +107,17 @@ export function OpinionesTable({ opiniones }: { opiniones: Opinion[] }) {
         </tbody>
       </table>
       {opiniones.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No hay opiniones registradas.</p>}
+      <ConfirmacionModal
+        abierto={opinionConfirmacion !== null}
+        titulo="Eliminar opinión"
+        descripcion={`Se eliminará la opinión de ${opinionConfirmacion?.user.nombre ?? "este cliente"}. Esta acción no se puede deshacer.`}
+        textoConfirmar="Eliminar"
+        procesando={procesando !== null}
+        onCerrar={() => {
+          if (procesando === null) setOpinionConfirmacion(null);
+        }}
+        onConfirmar={eliminar}
+      />
     </div>
   );
 }

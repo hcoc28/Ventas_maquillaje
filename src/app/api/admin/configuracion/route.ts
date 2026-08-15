@@ -28,6 +28,7 @@ export async function PUT(request: NextRequest) {
   });
 
   revalidatePath("/catalogo");
+  revalidatePath("/");
 
   return NextResponse.json(configuracion);
 }

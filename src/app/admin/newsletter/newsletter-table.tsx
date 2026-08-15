@@ -69,7 +69,12 @@ export function NewsletterTable({ suscriptores }: { suscriptores: Suscriptor[] }
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex justify-end">
-                      <AccionesMenu activo={s.activo} nombre={s.email} onCambiarActivo={(activo) => cambiarActivo(s.id, activo)} />
+                      <AccionesMenu
+                        activo={s.activo}
+                        nombre={s.email}
+                        accionDesactivar="Desactivar"
+                        onCambiarActivo={(activo) => cambiarActivo(s.id, activo)}
+                      />
                     </div>
                   </td>
                 </tr>

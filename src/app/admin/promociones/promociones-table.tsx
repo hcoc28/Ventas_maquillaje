@@ -23,7 +23,7 @@ export function PromocionesTable({ promociones, mostrarTodosInicial }: { promoci
   async function cambiarActivo(id: number, activo: boolean) {
     try {
       await axios.patch(`/api/admin/promociones/${id}`, { activo });
-      mostrar(activo ? "Promoción activada." : "Promoción desactivada.");
+      mostrar(activo ? "Promoción activada." : "Promoción eliminada del catálogo.");
       router.refresh();
     } catch {
       mostrar("No se pudo actualizar la promoción.", "error");

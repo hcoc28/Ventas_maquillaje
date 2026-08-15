@@ -23,7 +23,7 @@ export function CategoriasTable({ categorias, mostrarTodosInicial }: { categoria
   async function cambiarActivo(id: number, activo: boolean) {
     try {
       await axios.patch(`/api/admin/categorias/${id}`, { activo });
-      mostrar(activo ? "Categoría activada." : "Categoría desactivada.");
+      mostrar(activo ? "Categoría activada." : "Categoría eliminada del catálogo.");
       router.refresh();
     } catch {
       mostrar("No se pudo actualizar la categoría.", "error");

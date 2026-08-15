@@ -23,7 +23,7 @@ export function MarcasTable({ marcas, mostrarTodosInicial }: { marcas: Marca[]; 
   async function cambiarActivo(id: number, activo: boolean) {
     try {
       await axios.patch(`/api/admin/marcas/${id}`, { activo });
-      mostrar(activo ? "Marca activada." : "Marca desactivada.");
+      mostrar(activo ? "Marca activada." : "Marca eliminada del catálogo.");
       router.refresh();
     } catch {
       mostrar("No se pudo actualizar la marca.", "error");

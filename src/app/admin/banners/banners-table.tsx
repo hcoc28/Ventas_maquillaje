@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
+import { ConfirmacionModal } from "@/components/admin/confirmacion-modal";
 import type { getTodosLosBannersAdmin } from "@/server/services/banner.service";
 
 type Banner = Awaited<ReturnType<typeof getTodosLosBannersAdmin>>[number];
@@ -15,13 +16,15 @@ export function BannersTable({ banners }: { banners: Banner[] }) {
   const router = useRouter();
   const { mostrar } = useToast();
   const [eliminando, setEliminando] = useState<number | null>(null);
+  const [bannerConfirmacion, setBannerConfirmacion] = useState<Banner | null>(null);
 
-  async function eliminar(id: number, titulo: string) {
-    if (!confirm(`¿Eliminar el banner "${titulo}"? Esta acción no se puede deshacer.`)) return;
-    setEliminando(id);
+  async function eliminar() {
+    if (!bannerConfirmacion) return;
+    setEliminando(bannerConfirmacion.id);
     try {
-      await axios.delete(`/api/admin/banners/${id}`);
+      await axios.delete(`/api/admin/banners/${bannerConfirmacion.id}`);
       mostrar("Banner eliminado.");
+      setBannerConfirmacion(null);
       router.refresh();
     } catch {
       mostrar("No se pudo eliminar el banner.", "error");
@@ -72,7 +75,7 @@ export function BannersTable({ banners }: { banners: Banner[] }) {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => eliminar(b.id, b.titulo)}
+                    onClick={() => setBannerConfirmacion(b)}
                     disabled={eliminando === b.id}
                     className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 hover:bg-red-500/10 disabled:opacity-50"
                     aria-label="Eliminar"
@@ -86,6 +89,17 @@ export function BannersTable({ banners }: { banners: Banner[] }) {
         </tbody>
       </table>
       {banners.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No hay banners registrados.</p>}
+      <ConfirmacionModal
+        abierto={bannerConfirmacion !== null}
+        titulo={`Eliminar "${bannerConfirmacion?.titulo ?? "banner"}"`}
+        descripcion="Esta acción eliminará el banner de forma permanente y no se puede deshacer."
+        textoConfirmar="Eliminar"
+        procesando={eliminando !== null}
+        onCerrar={() => {
+          if (eliminando === null) setBannerConfirmacion(null);
+        }}
+        onConfirmar={eliminar}
+      />
     </div>
   );
 }

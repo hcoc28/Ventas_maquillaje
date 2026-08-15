@@ -23,7 +23,7 @@ export function CuponesTable({ cupones, mostrarTodosInicial }: { cupones: Cupon[
   async function cambiarActivo(id: number, activo: boolean) {
     try {
       await axios.patch(`/api/admin/cupones/${id}`, { activo });
-      mostrar(activo ? "Cupón activado." : "Cupón desactivado.");
+      mostrar(activo ? "Cupón activado." : "Cupón eliminado.");
       router.refresh();
     } catch {
       mostrar("No se pudo actualizar el cupón.", "error");
