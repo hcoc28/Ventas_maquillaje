@@ -23,10 +23,22 @@ export function MarcasTable({ marcas, mostrarTodosInicial }: { marcas: Marca[]; 
   async function cambiarActivo(id: number, activo: boolean) {
     try {
       await axios.patch(`/api/admin/marcas/${id}`, { activo });
-      mostrar(activo ? "Marca activada." : "Marca eliminada del catálogo.");
+      mostrar(activo ? "Marca activada." : "Marca desactivada.");
       router.refresh();
-    } catch {
-      mostrar("No se pudo actualizar la marca.", "error");
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo actualizar la marca.", "error");
+    }
+  }
+
+  async function eliminar(id: number) {
+    try {
+      await axios.delete(`/api/admin/marcas/${id}`);
+      mostrar("Marca eliminada.");
+      router.refresh();
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo eliminar la marca.", "error");
     }
   }
 
@@ -77,7 +89,12 @@ export function MarcasTable({ marcas, mostrarTodosInicial }: { marcas: Marca[]; 
                   >
                     <Pencil size={15} />
                   </Link>
-                  <AccionesMenu activo={m.activo} nombre={m.nombre} onCambiarActivo={(activo) => cambiarActivo(m.id, activo)} />
+                  <AccionesMenu
+                    activo={m.activo}
+                    nombre={m.nombre}
+                    onCambiarActivo={(activo) => cambiarActivo(m.id, activo)}
+                    onEliminar={() => eliminar(m.id)}
+                  />
                 </div>
               </td>
             </tr>

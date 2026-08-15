@@ -32,3 +32,7 @@ export async function actualizarBanner(id: number, data: BannerAdminInput) {
 export async function eliminarBanner(id: number) {
   return bannerRepo.eliminarBanner(id);
 }
+
+export async function cambiarEstadoBanner(id: number, activo: boolean) {
+  return bannerRepo.cambiarEstadoBanner(id, activo);
+}

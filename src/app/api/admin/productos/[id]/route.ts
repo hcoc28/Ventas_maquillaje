@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { estadoAdminSchema, productoAdminSchema } from "@/validators/admin";
-import { activarProductoAdmin, actualizarProductoAdmin, eliminarProductoAdmin, getProductoPorIdAdmin } from "@/server/services/producto.service";
+import {
+  activarProductoAdmin,
+  actualizarProductoAdmin,
+  eliminarProductoAdmin,
+  eliminarProductoPermanenteAdmin,
+  getProductoPorIdAdmin,
+} from "@/server/services/producto.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -60,4 +66,27 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   revalidatePath("/producto/[slug]", "page");
 
   return NextResponse.json(producto);
+}
+
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  try {
+    await eliminarProductoPermanenteAdmin(Number(id));
+
+    const session = await auth();
+    await registrarAuditoria({
+      entidad: "Producto",
+      entidadId: Number(id),
+      accion: "eliminar",
+      userId: session?.user?.id ? Number(session.user.id) : null,
+    });
+
+    revalidatePath("/");
+    revalidatePath("/catalogo");
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const mensaje = error instanceof Error ? error.message : "No se pudo eliminar el producto.";
+    return NextResponse.json({ mensaje }, { status: 400 });
+  }
 }

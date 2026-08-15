@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { Check, Mail } from "lucide-react";
+import { Check, Mail, MailOpen, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
+import { ConfirmacionModal } from "@/components/admin/confirmacion-modal";
 import type { getTodosLosMensajesAdmin } from "@/server/services/contacto.service";
 
 type Mensaje = Awaited<ReturnType<typeof getTodosLosMensajesAdmin>>[number];
@@ -13,15 +14,33 @@ export function ContactoTable({ mensajes }: { mensajes: Mensaje[] }) {
   const router = useRouter();
   const { mostrar } = useToast();
   const [procesando, setProcesando] = useState<number | null>(null);
+  const [mensajeEliminar, setMensajeEliminar] = useState<Mensaje | null>(null);
 
-  async function marcarLeido(id: number) {
+  async function cambiarLeido(id: number, leido: boolean) {
     setProcesando(id);
     try {
-      await axios.patch(`/api/admin/contacto/${id}`);
-      mostrar("Mensaje marcado como leído.");
+      await axios.patch(`/api/admin/contacto/${id}`, { leido });
+      mostrar(leido ? "Mensaje marcado como leído." : "Mensaje marcado como no leído.");
       router.refresh();
-    } catch {
-      mostrar("No se pudo actualizar el mensaje.", "error");
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo actualizar el mensaje.", "error");
+    } finally {
+      setProcesando(null);
+    }
+  }
+
+  async function eliminarMensaje() {
+    if (!mensajeEliminar) return;
+    setProcesando(mensajeEliminar.id);
+    try {
+      await axios.delete(`/api/admin/contacto/${mensajeEliminar.id}`);
+      mostrar("Mensaje eliminado.");
+      setMensajeEliminar(null);
+      router.refresh();
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo eliminar el mensaje.", "error");
     } finally {
       setProcesando(null);
     }
@@ -67,18 +86,48 @@ export function ContactoTable({ mensajes }: { mensajes: Mensaje[] }) {
           <p className="mb-1 text-sm font-semibold">{m.asunto}</p>
           <p className="whitespace-pre-wrap text-sm text-text-muted">{m.mensaje}</p>
 
-          {!m.leido && (
+          <div className="mt-4 flex flex-wrap gap-2">
+          {!m.leido ? (
             <button
               type="button"
-              onClick={() => marcarLeido(m.id)}
+              onClick={() => cambiarLeido(m.id, true)}
               disabled={procesando === m.id}
               className="mt-4 flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-surface-muted disabled:opacity-50"
             >
               <Check size={14} /> Marcar como leído
             </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => cambiarLeido(m.id, false)}
+              disabled={procesando === m.id}
+              className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold uppercase tracking-wider hover:bg-surface-muted disabled:opacity-50"
+            >
+              <MailOpen size={14} /> Marcar no leído
+            </button>
           )}
+            <button
+              type="button"
+              onClick={() => setMensajeEliminar(m)}
+              disabled={procesando === m.id}
+              className="flex items-center gap-2 rounded-full border border-red-200 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-red-600 hover:bg-red-500/10 disabled:opacity-50"
+            >
+              <Trash2 size={14} /> Eliminar
+            </button>
+          </div>
         </div>
       ))}
+      <ConfirmacionModal
+        abierto={mensajeEliminar !== null}
+        titulo="Eliminar mensaje"
+        descripcion={`Se eliminará el mensaje de ${mensajeEliminar?.nombre ?? "este contacto"}. Esta acción no se puede deshacer.`}
+        textoConfirmar="Eliminar"
+        procesando={procesando !== null}
+        onCerrar={() => {
+          if (procesando === null) setMensajeEliminar(null);
+        }}
+        onConfirmar={eliminarMensaje}
+      />
     </div>
   );
 }

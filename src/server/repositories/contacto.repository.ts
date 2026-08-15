@@ -16,3 +16,11 @@ export async function getTodosLosMensajesAdmin() {
 export async function marcarLeido(id: number) {
   return prisma.contactMessage.update({ where: { id }, data: { leido: true } });
 }
+
+export async function cambiarLeido(id: number, leido: boolean) {
+  return prisma.contactMessage.update({ where: { id }, data: { leido } });
+}
+
+export async function eliminarMensaje(id: number) {
+  return prisma.contactMessage.delete({ where: { id } });
+}

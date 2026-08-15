@@ -62,10 +62,22 @@ export function ProductosTable({
   async function cambiarActivo(id: number, activo: boolean) {
     try {
       await axios.patch(`/api/admin/productos/${id}`, { activo });
-      mostrar(activo ? "Producto activado." : "Producto eliminado del catálogo.");
+      mostrar(activo ? "Producto activado." : "Producto desactivado.");
       router.refresh();
-    } catch {
-      mostrar("No se pudo actualizar el producto.", "error");
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo actualizar el producto.", "error");
+    }
+  }
+
+  async function eliminar(id: number) {
+    try {
+      await axios.delete(`/api/admin/productos/${id}`);
+      mostrar("Producto eliminado.");
+      router.refresh();
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo eliminar el producto.", "error");
     }
   }
 
@@ -147,7 +159,12 @@ export function ProductosTable({
                       >
                         <Pencil size={15} />
                       </Link>
-                      <AccionesMenu activo={p.activo} nombre={p.nombre} onCambiarActivo={(activo) => cambiarActivo(p.id, activo)} />
+                      <AccionesMenu
+                        activo={p.activo}
+                        nombre={p.nombre}
+                        onCambiarActivo={(activo) => cambiarActivo(p.id, activo)}
+                        onEliminar={() => eliminar(p.id)}
+                      />
                     </div>
                   </td>
                 </tr>

@@ -345,9 +345,14 @@ model AuditLog {
 
 /// Fila unica (id=1) con las opciones de configuracion editables desde el panel admin.
 model SiteSetting {
-  id                 Int      @id @default(1)
-  mostrarFiltroMarcas Boolean @default(true) @map("mostrar_filtro_marcas")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  id                   Int      @id @default(1)
+  mostrarFiltroMarcas  Boolean  @default(true) @map("mostrar_filtro_marcas")
+  nombreEmpresa        String   @default("Amour Bloom") @map("nombre_empresa") @db.NVarChar(120)
+  descripcionEmpresa   String   @default("Tienda en línea de maquillaje 100% original. Brilla con suavidad, florece con estilo.") @map("descripcion_empresa") @db.NVarChar(500)
+  whatsappNumero       String   @default("50200000000") @map("whatsapp_numero") @db.NVarChar(30)
+  emailNotificaciones  String?  @map("email_notificaciones") @db.NVarChar(200)
+  direccionEmpresa     String?  @map("direccion_empresa") @db.NVarChar(300)
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
   @@map("site_settings")
 }

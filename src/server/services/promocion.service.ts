@@ -24,3 +24,7 @@ export async function eliminarPromocion(id: number) {
 export async function activarPromocion(id: number) {
   return promocionRepo.activarPromocion(id);
 }
+
+export async function eliminarPromocionPermanente(id: number) {
+  return promocionRepo.eliminarPromocionPermanente(id);
+}

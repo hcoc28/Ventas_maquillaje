@@ -111,8 +111,17 @@ export const estadoAdminSchema = z.object({
 
 export type EstadoAdminInput = z.infer<typeof estadoAdminSchema>;
 
+export const estadoLecturaContactoSchema = z.object({
+  leido: z.boolean(),
+});
+
 export const configuracionAdminSchema = z.object({
   mostrarFiltroMarcas: z.boolean(),
+  nombreEmpresa: z.string().trim().min(2).max(120),
+  descripcionEmpresa: z.string().trim().min(10).max(500),
+  whatsappNumero: z.string().trim().min(8).max(30).regex(/^[0-9+\s()-]+$/, "Ingresa un número válido."),
+  emailNotificaciones: z.string().trim().email("Ingresa un correo válido.").max(200).optional().or(z.literal("")),
+  direccionEmpresa: z.string().trim().max(300).optional().or(z.literal("")),
 });
 
 export type ConfiguracionAdminInput = z.infer<typeof configuracionAdminSchema>;

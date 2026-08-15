@@ -23,3 +23,11 @@ export async function getTodosLosMensajesAdmin() {
 export async function marcarMensajeLeidoAdmin(id: number) {
   return contactoRepo.marcarLeido(id);
 }
+
+export async function cambiarEstadoMensajeAdmin(id: number, leido: boolean) {
+  return contactoRepo.cambiarLeido(id, leido);
+}
+
+export async function eliminarMensajeContactoAdmin(id: number) {
+  return contactoRepo.eliminarMensaje(id);
+}

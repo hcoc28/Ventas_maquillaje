@@ -11,7 +11,14 @@ export async function getConfiguracion() {
   });
 }
 
-export async function actualizarConfiguracion(data: { mostrarFiltroMarcas: boolean }) {
+export async function actualizarConfiguracion(data: {
+  mostrarFiltroMarcas: boolean;
+  nombreEmpresa: string;
+  descripcionEmpresa: string;
+  whatsappNumero: string;
+  emailNotificaciones?: string | null;
+  direccionEmpresa?: string | null;
+}) {
   return prisma.siteSetting.upsert({
     where: { id: ID_CONFIGURACION },
     update: data,

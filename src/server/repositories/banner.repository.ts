@@ -36,3 +36,7 @@ export async function actualizarBanner(id: number, data: BannerAdminInput) {
 export async function eliminarBanner(id: number) {
   return prisma.banner.delete({ where: { id } });
 }
+
+export async function cambiarEstadoBanner(id: number, activo: boolean) {
+  return prisma.banner.update({ where: { id }, data: { activo } });
+}

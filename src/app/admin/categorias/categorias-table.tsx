@@ -23,10 +23,22 @@ export function CategoriasTable({ categorias, mostrarTodosInicial }: { categoria
   async function cambiarActivo(id: number, activo: boolean) {
     try {
       await axios.patch(`/api/admin/categorias/${id}`, { activo });
-      mostrar(activo ? "Categoría activada." : "Categoría eliminada del catálogo.");
+      mostrar(activo ? "Categoría activada." : "Categoría desactivada.");
       router.refresh();
-    } catch {
-      mostrar("No se pudo actualizar la categoría.", "error");
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo actualizar la categoría.", "error");
+    }
+  }
+
+  async function eliminar(id: number) {
+    try {
+      await axios.delete(`/api/admin/categorias/${id}`);
+      mostrar("Categoría eliminada.");
+      router.refresh();
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo eliminar la categoría.", "error");
     }
   }
 
@@ -79,7 +91,12 @@ export function CategoriasTable({ categorias, mostrarTodosInicial }: { categoria
                   >
                     <Pencil size={15} />
                   </Link>
-                  <AccionesMenu activo={c.activo} nombre={c.nombre} onCambiarActivo={(activo) => cambiarActivo(c.id, activo)} />
+                  <AccionesMenu
+                    activo={c.activo}
+                    nombre={c.nombre}
+                    onCambiarActivo={(activo) => cambiarActivo(c.id, activo)}
+                    onEliminar={() => eliminar(c.id)}
+                  />
                 </div>
               </td>
             </tr>

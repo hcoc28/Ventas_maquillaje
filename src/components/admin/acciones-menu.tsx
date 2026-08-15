@@ -9,12 +9,22 @@ interface Props {
   activo: boolean;
   nombre: string;
   accionDesactivar?: string;
+  accionEliminar?: string;
   onCambiarActivo: (activo: boolean) => Promise<void> | void;
+  onEliminar?: () => Promise<void> | void;
 }
 
-export function AccionesMenu({ activo, nombre, accionDesactivar = "Eliminar", onCambiarActivo }: Props) {
+export function AccionesMenu({
+  activo,
+  nombre,
+  accionDesactivar = "Desactivar",
+  accionEliminar = "Eliminar",
+  onCambiarActivo,
+  onEliminar,
+}: Props) {
   const [abierto, setAbierto] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
+  const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
   const [procesando, setProcesando] = useState(false);
   const [posicion, setPosicion] = useState<{ top: number; right: number } | null>(null);
   const botonRef = useRef<HTMLButtonElement>(null);
@@ -23,6 +33,7 @@ export function AccionesMenu({ activo, nombre, accionDesactivar = "Eliminar", on
   function cerrar() {
     setAbierto(false);
     setConfirmando(false);
+    setConfirmandoEliminar(false);
   }
 
   function alternar() {
@@ -78,6 +89,18 @@ export function AccionesMenu({ activo, nombre, accionDesactivar = "Eliminar", on
     }
   }
 
+  async function eliminar() {
+    if (!onEliminar) return;
+    setProcesando(true);
+    try {
+      await onEliminar();
+      setConfirmandoEliminar(false);
+      setAbierto(false);
+    } finally {
+      setProcesando(false);
+    }
+  }
+
   return (
     <>
       <button
@@ -98,17 +121,32 @@ export function AccionesMenu({ activo, nombre, accionDesactivar = "Eliminar", on
             className="z-50 w-60 rounded-xl border border-border bg-surface p-2 text-left shadow-[var(--shadow-strong)]"
           >
             {activo ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setAbierto(false);
-                  setConfirmando(true);
-                }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-500/10"
-              >
-                <Trash2 size={14} /> {accionDesactivar}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAbierto(false);
+                    setConfirmando(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-amber-600 hover:bg-amber-500/10"
+                >
+                  <Power size={14} /> {accionDesactivar}
+                </button>
+                {onEliminar && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAbierto(false);
+                      setConfirmandoEliminar(true);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-500/10"
+                  >
+                    <Trash2 size={14} /> {accionEliminar}
+                  </button>
+                )}
+              </>
             ) : (
+              <>
               <button
                 type="button"
                 disabled={procesando}
@@ -117,13 +155,26 @@ export function AccionesMenu({ activo, nombre, accionDesactivar = "Eliminar", on
               >
                 <Power size={14} /> Activar
               </button>
+                {onEliminar && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAbierto(false);
+                      setConfirmandoEliminar(true);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-500/10"
+                  >
+                    <Trash2 size={14} /> {accionEliminar}
+                  </button>
+                )}
+              </>
             )}
           </div>,
           document.body
         )}
       <ConfirmacionModal
         abierto={confirmando}
-        titulo={`${accionDesactivar} "${nombre}"`}
+        titulo={`Desactivar "${nombre}"`}
         descripcion="Esta acción lo dejará inactivo y ya no se mostrará en la tienda. Podrás volver a activarlo desde la opción de mostrar inactivos."
         textoConfirmar={accionDesactivar}
         procesando={procesando}
@@ -131,6 +182,17 @@ export function AccionesMenu({ activo, nombre, accionDesactivar = "Eliminar", on
           if (!procesando) setConfirmando(false);
         }}
         onConfirmar={confirmarDesactivar}
+      />
+      <ConfirmacionModal
+        abierto={confirmandoEliminar}
+        titulo={`${accionEliminar} "${nombre}"`}
+        descripcion="Esta acción intentará eliminar el registro de forma permanente. Si tiene historial o elementos asociados, el sistema te avisará para que lo desactives en su lugar."
+        textoConfirmar={accionEliminar}
+        procesando={procesando}
+        onCerrar={() => {
+          if (!procesando) setConfirmandoEliminar(false);
+        }}
+        onConfirmar={eliminar}
       />
     </>
   );

@@ -5,9 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useToast } from "@/components/ui/toast-provider";
-import { ConfirmacionModal } from "@/components/admin/confirmacion-modal";
+import { AccionesMenu } from "@/components/admin/acciones-menu";
 import type { getTodosLosBannersAdmin } from "@/server/services/banner.service";
 
 type Banner = Awaited<ReturnType<typeof getTodosLosBannersAdmin>>[number];
@@ -15,21 +15,33 @@ type Banner = Awaited<ReturnType<typeof getTodosLosBannersAdmin>>[number];
 export function BannersTable({ banners }: { banners: Banner[] }) {
   const router = useRouter();
   const { mostrar } = useToast();
-  const [eliminando, setEliminando] = useState<number | null>(null);
-  const [bannerConfirmacion, setBannerConfirmacion] = useState<Banner | null>(null);
+  const [procesando, setProcesando] = useState<number | null>(null);
 
-  async function eliminar() {
-    if (!bannerConfirmacion) return;
-    setEliminando(bannerConfirmacion.id);
+  async function cambiarActivo(id: number, activo: boolean) {
+    setProcesando(id);
     try {
-      await axios.delete(`/api/admin/banners/${bannerConfirmacion.id}`);
-      mostrar("Banner eliminado.");
-      setBannerConfirmacion(null);
+      await axios.patch(`/api/admin/banners/${id}`, { activo });
+      mostrar(activo ? "Banner activado." : "Banner desactivado.");
       router.refresh();
-    } catch {
-      mostrar("No se pudo eliminar el banner.", "error");
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo actualizar el banner.", "error");
     } finally {
-      setEliminando(null);
+      setProcesando(null);
+    }
+  }
+
+  async function eliminar(id: number) {
+    setProcesando(id);
+    try {
+      await axios.delete(`/api/admin/banners/${id}`);
+      mostrar("Banner eliminado.");
+      router.refresh();
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo eliminar el banner.", "error");
+    } finally {
+      setProcesando(null);
     }
   }
 
@@ -73,15 +85,14 @@ export function BannersTable({ banners }: { banners: Banner[] }) {
                   >
                     <Pencil size={15} />
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => setBannerConfirmacion(b)}
-                    disabled={eliminando === b.id}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-red-600 hover:bg-red-500/10 disabled:opacity-50"
-                    aria-label="Eliminar"
-                  >
-                    <Trash2 size={15} />
-                  </button>
+                  <div className={procesando === b.id ? "pointer-events-none opacity-60" : ""}>
+                    <AccionesMenu
+                      activo={b.activo}
+                      nombre={b.titulo}
+                      onCambiarActivo={(activo) => cambiarActivo(b.id, activo)}
+                      onEliminar={() => eliminar(b.id)}
+                    />
+                  </div>
                 </div>
               </td>
             </tr>
@@ -89,17 +100,6 @@ export function BannersTable({ banners }: { banners: Banner[] }) {
         </tbody>
       </table>
       {banners.length === 0 && <p className="py-10 text-center text-sm text-text-muted">No hay banners registrados.</p>}
-      <ConfirmacionModal
-        abierto={bannerConfirmacion !== null}
-        titulo={`Eliminar "${bannerConfirmacion?.titulo ?? "banner"}"`}
-        descripcion="Esta acción eliminará el banner de forma permanente y no se puede deshacer."
-        textoConfirmar="Eliminar"
-        procesando={eliminando !== null}
-        onCerrar={() => {
-          if (eliminando === null) setBannerConfirmacion(null);
-        }}
-        onConfirmar={eliminar}
-      />
     </div>
   );
 }

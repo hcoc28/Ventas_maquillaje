@@ -47,3 +47,10 @@ export async function eliminarPromocion(id: number) {
 export async function activarPromocion(id: number) {
   return prisma.promotion.update({ where: { id }, data: { activo: true, deletedAt: null } });
 }
+
+export async function eliminarPromocionPermanente(id: number) {
+  return prisma.$transaction(async (tx) => {
+    await tx.product.updateMany({ where: { promotionId: id }, data: { promotionId: null } });
+    return tx.promotion.delete({ where: { id } });
+  });
+}

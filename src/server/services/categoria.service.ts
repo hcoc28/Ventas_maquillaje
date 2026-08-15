@@ -42,3 +42,7 @@ export async function eliminarCategoria(id: number) {
 export async function activarCategoria(id: number) {
   return categoriaRepo.activarCategoria(id);
 }
+
+export async function eliminarCategoriaPermanente(id: number) {
+  return categoriaRepo.eliminarCategoriaPermanente(id);
+}

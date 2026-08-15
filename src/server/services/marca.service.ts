@@ -41,3 +41,7 @@ export async function eliminarMarca(id: number) {
 export async function activarMarca(id: number) {
   return marcaRepo.activarMarca(id);
 }
+
+export async function eliminarMarcaPermanente(id: number) {
+  return marcaRepo.eliminarMarcaPermanente(id);
+}

@@ -23,10 +23,22 @@ export function CuponesTable({ cupones, mostrarTodosInicial }: { cupones: Cupon[
   async function cambiarActivo(id: number, activo: boolean) {
     try {
       await axios.patch(`/api/admin/cupones/${id}`, { activo });
-      mostrar(activo ? "Cupón activado." : "Cupón eliminado.");
+      mostrar(activo ? "Cupón activado." : "Cupón desactivado.");
       router.refresh();
-    } catch {
-      mostrar("No se pudo actualizar el cupón.", "error");
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo actualizar el cupón.", "error");
+    }
+  }
+
+  async function eliminar(id: number) {
+    try {
+      await axios.delete(`/api/admin/cupones/${id}`);
+      mostrar("Cupón eliminado.");
+      router.refresh();
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo eliminar el cupón.", "error");
     }
   }
 
@@ -84,7 +96,12 @@ export function CuponesTable({ cupones, mostrarTodosInicial }: { cupones: Cupon[
                   >
                     <Pencil size={15} />
                   </Link>
-                  <AccionesMenu activo={c.activo} nombre={c.codigo} onCambiarActivo={(activo) => cambiarActivo(c.id, activo)} />
+                  <AccionesMenu
+                    activo={c.activo}
+                    nombre={c.codigo}
+                    onCambiarActivo={(activo) => cambiarActivo(c.id, activo)}
+                    onEliminar={() => eliminar(c.id)}
+                  />
                 </div>
               </td>
             </tr>

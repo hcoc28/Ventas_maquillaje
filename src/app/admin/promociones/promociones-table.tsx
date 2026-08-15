@@ -23,10 +23,22 @@ export function PromocionesTable({ promociones, mostrarTodosInicial }: { promoci
   async function cambiarActivo(id: number, activo: boolean) {
     try {
       await axios.patch(`/api/admin/promociones/${id}`, { activo });
-      mostrar(activo ? "Promoción activada." : "Promoción eliminada del catálogo.");
+      mostrar(activo ? "Promoción activada." : "Promoción desactivada.");
       router.refresh();
-    } catch {
-      mostrar("No se pudo actualizar la promoción.", "error");
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo actualizar la promoción.", "error");
+    }
+  }
+
+  async function eliminar(id: number) {
+    try {
+      await axios.delete(`/api/admin/promociones/${id}`);
+      mostrar("Promoción eliminada.");
+      router.refresh();
+    } catch (err) {
+      const mensaje = axios.isAxiosError(err) ? err.response?.data?.mensaje : null;
+      mostrar(mensaje ?? "No se pudo eliminar la promoción.", "error");
     }
   }
 
@@ -81,7 +93,12 @@ export function PromocionesTable({ promociones, mostrarTodosInicial }: { promoci
                   >
                     <Pencil size={15} />
                   </Link>
-                  <AccionesMenu activo={p.activo} nombre={p.nombre} onCambiarActivo={(activo) => cambiarActivo(p.id, activo)} />
+                  <AccionesMenu
+                    activo={p.activo}
+                    nombre={p.nombre}
+                    onCambiarActivo={(activo) => cambiarActivo(p.id, activo)}
+                    onEliminar={() => eliminar(p.id)}
+                  />
                 </div>
               </td>
             </tr>

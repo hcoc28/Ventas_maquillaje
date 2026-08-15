@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { cuponAdminSchema, estadoAdminSchema } from "@/validators/admin";
-import { activarCuponAdmin, actualizarCuponAdmin, desactivarCuponAdmin } from "@/server/services/cupon.service";
+import { activarCuponAdmin, actualizarCuponAdmin, desactivarCuponAdmin, eliminarCuponAdmin } from "@/server/services/cupon.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -50,4 +50,23 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   });
 
   return NextResponse.json(cupon);
+}
+
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  try {
+    await eliminarCuponAdmin(Number(id));
+
+    const session = await auth();
+    await registrarAuditoria({
+      entidad: "Cupon",
+      entidadId: Number(id),
+      accion: "eliminar",
+      userId: session?.user?.id ? Number(session.user.id) : null,
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ mensaje: "No se pudo eliminar el cupón." }, { status: 400 });
+  }
 }

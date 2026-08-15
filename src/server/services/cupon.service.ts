@@ -64,3 +64,7 @@ export async function desactivarCuponAdmin(id: number) {
 export async function activarCuponAdmin(id: number) {
   return cuponRepo.activarCupon(id);
 }
+
+export async function eliminarCuponAdmin(id: number) {
+  return cuponRepo.eliminarCupon(id);
+}

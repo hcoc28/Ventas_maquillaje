@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Mail, MapPin, MessageCircle } from "lucide-react";
-import { siteConfig } from "@/config/site";
+import { getConfiguracion } from "@/server/services/configuracion.service";
 import { ContactoForm } from "./contacto-form";
 
 export const metadata: Metadata = {
@@ -9,8 +9,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "/contacto" },
 };
 
-export default function ContactoPage() {
-  const numeroWhatsapp = siteConfig.whatsappNumero;
+export default async function ContactoPage() {
+  const configuracion = await getConfiguracion();
+  const numeroWhatsapp = configuracion.whatsappNumero.replace(/\D/g, "");
+  const email = configuracion.emailNotificaciones || "hola@amourbloom.com";
 
   return (
     <div className="mx-auto max-w-6xl px-5 pb-24 pt-32 sm:px-8">
@@ -49,8 +51,8 @@ export default function ContactoPage() {
             <div>
               <h2 className="font-semibold">Correo electrónico</h2>
               <p className="text-sm text-text-muted">Para consultas generales y alianzas comerciales.</p>
-              <a href="mailto:hola@amourbloom.com" className="mt-1 inline-block text-sm font-medium text-accent-strong hover:underline">
-                hola@amourbloom.com
+              <a href={`mailto:${email}`} className="mt-1 inline-block text-sm font-medium text-accent-strong hover:underline">
+                {email}
               </a>
             </div>
           </div>
@@ -61,7 +63,9 @@ export default function ContactoPage() {
             </span>
             <div>
               <h2 className="font-semibold">Showroom</h2>
-              <p className="text-sm text-text-muted">4a Avenida 12-34, Zona 10, Ciudad de Guatemala</p>
+              <p className="text-sm text-text-muted">
+                {configuracion.direccionEmpresa || "4a Avenida 12-34, Zona 10, Ciudad de Guatemala"}
+              </p>
             </div>
           </div>
 

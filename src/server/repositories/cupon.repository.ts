@@ -28,3 +28,7 @@ export async function desactivarCupon(id: number) {
 export async function activarCupon(id: number) {
   return prisma.coupon.update({ where: { id }, data: { activo: true } });
 }
+
+export async function eliminarCupon(id: number) {
+  return prisma.coupon.delete({ where: { id } });
+}

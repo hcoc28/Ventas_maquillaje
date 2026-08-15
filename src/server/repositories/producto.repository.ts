@@ -299,3 +299,17 @@ export async function eliminarProductoAdmin(id: number) {
 export async function activarProductoAdmin(id: number) {
   return prisma.product.update({ where: { id }, data: { activo: true, deletedAt: null } });
 }
+
+export async function eliminarProductoPermanente(id: number) {
+  return prisma.$transaction(async (tx) => {
+    const detalles = await tx.orderDetail.count({ where: { productId: id } });
+    if (detalles > 0) {
+      throw new Error("No se puede eliminar permanentemente un producto con pedidos registrados. Desactívalo para ocultarlo del catálogo.");
+    }
+
+    await tx.cartItem.deleteMany({ where: { productId: id } });
+    await tx.favorite.deleteMany({ where: { productId: id } });
+    await tx.review.deleteMany({ where: { productId: id } });
+    return tx.product.delete({ where: { id } });
+  });
+}

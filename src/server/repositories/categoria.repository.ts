@@ -57,3 +57,11 @@ export async function eliminarCategoria(id: number) {
 export async function activarCategoria(id: number) {
   return prisma.category.update({ where: { id }, data: { activo: true, deletedAt: null } });
 }
+
+export async function eliminarCategoriaPermanente(id: number) {
+  const productos = await prisma.product.count({ where: { categoryId: id } });
+  if (productos > 0) {
+    throw new Error("No se puede eliminar una categoría con productos asociados. Desactívala o mueve sus productos primero.");
+  }
+  return prisma.category.delete({ where: { id } });
+}

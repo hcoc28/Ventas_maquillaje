@@ -174,4 +174,8 @@ export async function activarProductoAdmin(id: number) {
   return productoRepo.activarProductoAdmin(id);
 }
 
+export async function eliminarProductoPermanenteAdmin(id: number) {
+  return productoRepo.eliminarProductoPermanente(id);
+}
+
 export { precioFinal, promocionVigente };

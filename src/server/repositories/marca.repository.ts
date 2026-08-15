@@ -55,3 +55,11 @@ export async function eliminarMarca(id: number) {
 export async function activarMarca(id: number) {
   return prisma.brand.update({ where: { id }, data: { activo: true, deletedAt: null } });
 }
+
+export async function eliminarMarcaPermanente(id: number) {
+  const productos = await prisma.product.count({ where: { brandId: id } });
+  if (productos > 0) {
+    throw new Error("No se puede eliminar una marca con productos asociados. Desactívala o mueve sus productos primero.");
+  }
+  return prisma.brand.delete({ where: { id } });
+}

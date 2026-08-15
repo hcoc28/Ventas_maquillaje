@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { categoriaAdminSchema, estadoAdminSchema } from "@/validators/admin";
-import { activarCategoria, actualizarCategoria, eliminarCategoria } from "@/server/services/categoria.service";
+import { activarCategoria, actualizarCategoria, eliminarCategoria, eliminarCategoriaPermanente } from "@/server/services/categoria.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -51,4 +51,27 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   revalidatePath("/");
 
   return NextResponse.json(categoria);
+}
+
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  try {
+    await eliminarCategoriaPermanente(Number(id));
+
+    const session = await auth();
+    await registrarAuditoria({
+      entidad: "Categoria",
+      entidadId: Number(id),
+      accion: "eliminar",
+      userId: session?.user?.id ? Number(session.user.id) : null,
+    });
+
+    revalidatePath("/");
+    revalidatePath("/catalogo");
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const mensaje = error instanceof Error ? error.message : "No se pudo eliminar la categoría.";
+    return NextResponse.json({ mensaje }, { status: 400 });
+  }
 }
