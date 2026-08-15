@@ -85,10 +85,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setItems(limpios);
         guardarItemsLocales(limpios);
       }
+      return data;
+    } catch {
+      // Sin esto, un fallo de red aquí no mostraba nada — ni toast ni error, el usuario no se
+      // enteraba de por qué su producto/cupón/cantidad no se reflejó.
+      mostrar("No se pudo actualizar el carrito. Verifica tu conexión e intenta de nuevo.", "error");
+      return null;
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [mostrar]);
 
   useEffect(() => {
     if (!hidratado) return;
@@ -103,15 +109,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async (nuevos: CarritoItemInput[]) => {
       setItems(nuevos);
       guardarItemsLocales(nuevos);
-      await recalcular(nuevos, codigoCupon || undefined);
+      return recalcular(nuevos, codigoCupon || undefined);
     },
     [recalcular, codigoCupon]
   );
 
   const aplicarCupon = useCallback(
     async (codigo: string) => {
-      setCodigoCupon(codigo);
-      await recalcular(items, codigo);
+      // No se guarda el código si el servidor lo rechaza (o si la petición falla) — si no, cada
+      // acción posterior en el carrito (agregar, cambiar cantidad, etc.) volvería a reenviarlo y
+      // repetir el mismo error sin que hubiera manera de "quitarlo" salvo vaciando todo el carrito.
+      const resultado = await recalcular(items, codigo);
+      if (resultado) setCodigoCupon(resultado.cuponError ? "" : codigo);
     },
     [recalcular, items]
   );
@@ -127,8 +136,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const nuevos = existente
         ? items.map((i) => (i.productoId === productoId ? { ...i, cantidad: i.cantidad + cantidad } : i))
         : [...items, { productoId, cantidad }];
-      await actualizarItems(nuevos);
-      mostrar("Producto agregado al carrito.");
+      const resultado = await actualizarItems(nuevos);
+      if (resultado) mostrar("Producto agregado al carrito.");
     },
     [items, actualizarItems, mostrar]
   );

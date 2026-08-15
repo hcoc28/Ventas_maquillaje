@@ -12,7 +12,7 @@ import type { ProductoResumen } from "@/types/catalogo";
 
 export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen; index?: number }) {
   const estrellas = Math.round(producto.calificacionPromedio);
-  const { agregar } = useCart();
+  const { agregar, cargando } = useCart();
   const { esFavorito, alternar } = useFavoritos();
   const favorito = esFavorito(producto.id);
   const [seleccionando, setSeleccionando] = useState(false);
@@ -116,9 +116,10 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
             <button
               type="button"
               onClick={confirmarAgregar}
-              className="w-full rounded-full bg-black py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-accent-strong"
+              disabled={cargando}
+              className="w-full rounded-full bg-black py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
             >
-              Confirmar
+              {cargando ? "Agregando..." : "Confirmar"}
             </button>
           </div>
         </div>

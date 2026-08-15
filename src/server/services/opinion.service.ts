@@ -11,8 +11,8 @@ export async function crearOpinion(
   if (calificacion < 1 || calificacion > 5) {
     return { exitoso: false, errores: ["La calificación debe estar entre 1 y 5."] };
   }
-  if (!comentario.trim()) {
-    return { exitoso: false, errores: ["El comentario no puede estar vacío."] };
+  if (comentario.trim().length < 3) {
+    return { exitoso: false, errores: ["El comentario es muy corto."] };
   }
 
   const producto = await productoRepo.getProductoById(productoId);

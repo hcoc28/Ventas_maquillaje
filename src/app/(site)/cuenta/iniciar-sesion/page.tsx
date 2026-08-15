@@ -33,23 +33,27 @@ function IniciarSesionForm() {
 
   async function onSubmit(data: LoginInput) {
     setErrorGeneral(null);
-    const resultado = await signIn("credentials", { ...data, redirect: false });
+    try {
+      const resultado = await signIn("credentials", { ...data, redirect: false });
 
-    if (resultado?.error) {
-      setErrorGeneral("Correo electrónico o contraseña incorrectos.");
-      return;
-    }
+      if (resultado?.error) {
+        setErrorGeneral("Correo electrónico o contraseña incorrectos.");
+        return;
+      }
 
-    // Si no venías redirigido desde una página específica (ej. te mandaron a /admin/algo y por
-    // eso hay callbackUrl), mandamos al staff directo al panel en vez de a "Mi cuenta".
-    if (callbackUrlParam) {
-      router.push(callbackUrlParam);
-    } else {
-      const session = await getSession();
-      const esStaff = session?.user?.role === "Administrador" || session?.user?.role === "Empleado";
-      router.push(esStaff ? "/admin" : "/cuenta");
+      // Si no venías redirigido desde una página específica (ej. te mandaron a /admin/algo y por
+      // eso hay callbackUrl), mandamos al staff directo al panel en vez de a "Mi cuenta".
+      if (callbackUrlParam) {
+        router.push(callbackUrlParam);
+      } else {
+        const session = await getSession();
+        const esStaff = session?.user?.role === "Administrador" || session?.user?.role === "Empleado";
+        router.push(esStaff ? "/admin" : "/cuenta");
+      }
+      router.refresh();
+    } catch {
+      setErrorGeneral("No se pudo iniciar sesión. Verifica tu conexión e intenta de nuevo.");
     }
-    router.refresh();
   }
 
   return (

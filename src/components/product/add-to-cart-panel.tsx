@@ -7,7 +7,7 @@ import { useFavoritos } from "@/components/favoritos/favoritos-context";
 
 export function AddToCartPanel({ productoId, stock, hayStock }: { productoId: number; stock: number; hayStock: boolean }) {
   const [cantidad, setCantidad] = useState(1);
-  const { agregar } = useCart();
+  const { agregar, cargando } = useCart();
   const { esFavorito, alternar } = useFavoritos();
   const favorito = esFavorito(productoId);
 
@@ -39,11 +39,11 @@ export function AddToCartPanel({ productoId, stock, hayStock }: { productoId: nu
       <div className="flex gap-3">
         <button
           type="button"
-          disabled={!hayStock}
+          disabled={!hayStock || cargando}
           onClick={() => agregar(productoId, cantidad)}
           className="flex flex-1 items-center justify-center gap-2 rounded-full bg-black py-3.5 text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:bg-accent-strong disabled:opacity-50"
         >
-          <ShoppingBag size={16} /> Agregar al carrito
+          <ShoppingBag size={16} /> {cargando ? "Agregando..." : "Agregar al carrito"}
         </button>
         <button
           type="button"

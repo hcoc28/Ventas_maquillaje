@@ -16,6 +16,7 @@ import { datosContactoSchema, METODOS_PAGO, type DatosContactoInput } from "@/va
 export function CartDrawer() {
   const {
     carrito,
+    cargando,
     drawerAbierto,
     checkoutAbierto,
     cerrarDrawer,
@@ -155,15 +156,30 @@ export function CartDrawer() {
                             {item.cantidadAjustada && <span className="block text-[0.7rem] text-red-600">Cantidad ajustada por disponibilidad</span>}
                             <div className="mt-1.5 flex items-center gap-2">
                               <div className="inline-flex items-center rounded-full border border-border">
-                                <button onClick={() => actualizar(item.productoId, item.cantidad - 1)} className="p-1.5" aria-label="Reducir cantidad">
+                                <button
+                                  onClick={() => actualizar(item.productoId, item.cantidad - 1)}
+                                  disabled={cargando}
+                                  className="p-1.5 disabled:opacity-50"
+                                  aria-label="Reducir cantidad"
+                                >
                                   <Minus size={12} />
                                 </button>
                                 <span className="w-6 text-center text-xs font-semibold">{item.cantidad}</span>
-                                <button onClick={() => actualizar(item.productoId, item.cantidad + 1)} className="p-1.5" aria-label="Aumentar cantidad">
+                                <button
+                                  onClick={() => actualizar(item.productoId, item.cantidad + 1)}
+                                  disabled={cargando}
+                                  className="p-1.5 disabled:opacity-50"
+                                  aria-label="Aumentar cantidad"
+                                >
                                   <Plus size={12} />
                                 </button>
                               </div>
-                              <button onClick={() => eliminar(item.productoId)} aria-label="Eliminar" className="text-text-muted hover:text-red-600">
+                              <button
+                                onClick={() => eliminar(item.productoId)}
+                                disabled={cargando}
+                                aria-label="Eliminar"
+                                className="text-text-muted hover:text-red-600 disabled:opacity-50"
+                              >
                                 <Trash2 size={14} />
                               </button>
                             </div>

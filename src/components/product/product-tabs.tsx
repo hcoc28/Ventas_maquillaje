@@ -52,8 +52,8 @@ function ReviewForm({ productoId }: { productoId: number }) {
       mostrar("Selecciona una calificación.", "error");
       return;
     }
-    if (!comentario.trim()) {
-      mostrar("Escribe un comentario.", "error");
+    if (comentario.trim().length < 3) {
+      mostrar("El comentario es muy corto.", "error");
       return;
     }
     setEnviando(true);

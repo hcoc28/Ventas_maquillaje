@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import { useToast } from "@/components/ui/toast-provider";
@@ -9,6 +10,7 @@ import type { getTodosLosUsuariosAdmin } from "@/server/services/usuario.service
 type Usuario = Awaited<ReturnType<typeof getTodosLosUsuariosAdmin>>[number];
 
 export function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
+  const router = useRouter();
   const { data: session } = useSession();
   const { mostrar } = useToast();
   const [estado, setEstado] = useState(new Map(usuarios.map((u) => [u.id, { activo: u.activo }])));
@@ -21,6 +23,7 @@ export function UsuariosTable({ usuarios }: { usuarios: Usuario[] }) {
     try {
       await axios.put(`/api/admin/usuarios/${userId}`, datos);
       mostrar("Usuario actualizado.");
+      router.refresh();
     } catch {
       mostrar("No se pudo actualizar el usuario.", "error");
     } finally {
