@@ -1,16 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
+import { useModalLock } from "@/lib/use-modal-lock";
 import type { ProductoImagenDto } from "@/types/catalogo";
 
 export function ProductGallery({ imagenes, nombre }: { imagenes: ProductoImagenDto[]; nombre: string }) {
   const [activa, setActiva] = useState(0);
   const [lightboxAbierto, setLightboxAbierto] = useState(false);
+  const containerRef = useModalLock<HTMLDivElement>(lightboxAbierto);
 
   const imagen = imagenes[activa] ?? imagenes[0];
+
+  useEffect(() => {
+    if (!lightboxAbierto) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightboxAbierto(false);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [lightboxAbierto]);
 
   return (
     <div>
@@ -30,6 +41,8 @@ export function ProductGallery({ imagenes, nombre }: { imagenes: ProductoImagenD
             <button
               key={i}
               onClick={() => setActiva(i)}
+              aria-label={`Ver imagen ${i + 1} de ${nombre}`}
+              aria-pressed={i === activa}
               className={`relative h-[76px] w-[76px] overflow-hidden rounded-xl border-2 transition-opacity ${
                 i === activa ? "border-accent-strong opacity-100" : "border-transparent opacity-65 hover:opacity-100"
               }`}
@@ -43,6 +56,10 @@ export function ProductGallery({ imagenes, nombre }: { imagenes: ProductoImagenD
       <AnimatePresence>
         {lightboxAbierto && imagen && (
           <motion.div
+            ref={containerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={imagen.textoAlt || nombre}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

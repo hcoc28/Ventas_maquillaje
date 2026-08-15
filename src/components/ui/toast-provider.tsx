@@ -40,7 +40,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ mostrar }}>
       {children}
-      <div className="fixed right-6 top-24 z-[2000] flex flex-col gap-3">
+      <div role="status" aria-live="polite" aria-atomic="true" className="fixed right-6 top-24 z-[2000] flex flex-col gap-3">
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div

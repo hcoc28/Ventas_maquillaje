@@ -11,6 +11,7 @@ import { ArrowLeft, MessageCircle, Minus, Plus, ShoppingBag, Tag, Trash2, X } fr
 import { useCart } from "@/components/cart/cart-context";
 import { useToast } from "@/components/ui/toast-provider";
 import { formatearMoneda } from "@/lib/utils";
+import { useModalLock } from "@/lib/use-modal-lock";
 import { datosContactoSchema, METODOS_PAGO, type DatosContactoInput } from "@/validators/pedido";
 
 export function CartDrawer() {
@@ -48,6 +49,8 @@ export function CartDrawer() {
     setPedidoConfirmado(null);
     cerrarDrawer();
   }, [cerrarDrawer]);
+
+  const containerRef = useModalLock<HTMLElement>(drawerAbierto);
 
   useEffect(() => {
     if (!drawerAbierto) return;
@@ -94,6 +97,7 @@ export function CartDrawer() {
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={cerrar} className="fixed inset-0 z-[1400] bg-black/50" />
           <motion.aside
+            ref={containerRef}
             role="dialog"
             aria-modal="true"
             aria-label="Carrito de compras"

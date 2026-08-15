@@ -89,6 +89,7 @@ export function ProductosTable({
           <input
             value={termino}
             onChange={(e) => setTermino(e.target.value)}
+            aria-label="Buscar productos"
             placeholder="Buscar por nombre, marca o categoría..."
             className="w-full rounded-full border border-border bg-surface py-2.5 pl-11 pr-4 text-sm outline-none focus:border-accent-strong"
           />

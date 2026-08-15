@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -8,6 +8,7 @@ import { Heart, Minus, Plus, ShoppingBag, Star } from "lucide-react";
 import { formatearMoneda } from "@/lib/utils";
 import { useCart } from "@/components/cart/cart-context";
 import { useFavoritos } from "@/components/favoritos/favoritos-context";
+import { useModalLock } from "@/lib/use-modal-lock";
 import type { ProductoResumen } from "@/types/catalogo";
 
 export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen; index?: number }) {
@@ -17,6 +18,16 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
   const favorito = esFavorito(producto.id);
   const [seleccionando, setSeleccionando] = useState(false);
   const [cantidad, setCantidad] = useState(1);
+  const containerRef = useModalLock<HTMLDivElement>(seleccionando);
+
+  useEffect(() => {
+    if (!seleccionando) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setSeleccionando(false);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [seleccionando]);
 
   async function confirmarAgregar() {
     await agregar(producto.id, cantidad);
@@ -90,6 +101,10 @@ export function ProductCard({ producto, index = 0 }: { producto: ProductoResumen
           onClick={() => setSeleccionando(false)}
         >
           <div
+            ref={containerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Agregar ${producto.nombre} al carrito`}
             onClick={(e) => e.stopPropagation()}
             className="flex w-full flex-col items-center gap-3 rounded-2xl bg-white p-4 shadow-xl"
           >

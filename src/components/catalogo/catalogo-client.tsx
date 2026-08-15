@@ -189,6 +189,7 @@ export function CatalogoClient({ categorias, marcas, resultadoInicial, filtroIni
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   type="text"
+                  aria-label="Buscar productos"
                   placeholder="Buscar productos..."
                   className="w-full rounded-full border border-border bg-surface py-2.5 pl-11 pr-4 text-sm outline-none focus:border-accent-strong"
                 />
@@ -206,6 +207,7 @@ export function CatalogoClient({ categorias, marcas, resultadoInicial, filtroIni
                 <select
                   value={orden}
                   onChange={(e) => setOrden(e.target.value as OrdenCatalogo)}
+                  aria-label="Ordenar productos"
                   className="rounded-full border border-border bg-surface px-4 py-2.5 text-sm outline-none"
                 >
                   {OPCIONES_ORDEN.map((o) => (

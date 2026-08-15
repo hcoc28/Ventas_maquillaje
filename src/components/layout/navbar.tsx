@@ -12,6 +12,7 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { useNavbarTema } from "@/components/layout/navbar-theme-context";
 import { useCart } from "@/components/cart/cart-context";
 import { cn, formatearMoneda } from "@/lib/utils";
+import { useModalLock } from "@/lib/use-modal-lock";
 import type { CategoriaDto } from "@/types/catalogo";
 
 interface SugerenciaProducto {
@@ -255,6 +256,7 @@ export function Navbar({ categorias }: NavbarProps) {
                   onFocus={() => setMostrarSugerencias(true)}
                   onBlur={() => setTimeout(() => setMostrarSugerencias(false), 150)}
                   type="text"
+                  aria-label="Buscar productos"
                   placeholder="Buscar labiales, bases, skincare..."
                   className="w-full rounded-full border border-border bg-background py-3 pl-11 pr-4 text-sm outline-none focus:border-accent-strong"
                 />
@@ -306,6 +308,8 @@ function MobileMenu({
   onCerrar: () => void;
   links: { href: string; label: string }[];
 }) {
+  const containerRef = useModalLock<HTMLDivElement>(abierto);
+
   useEffect(() => {
     if (!abierto) return;
     function onKeyDown(e: KeyboardEvent) {
@@ -327,6 +331,7 @@ function MobileMenu({
             className="fixed inset-0 z-40 bg-black/50"
           />
           <motion.div
+            ref={containerRef}
             role="dialog"
             aria-modal="true"
             aria-label="Menú de navegación"
