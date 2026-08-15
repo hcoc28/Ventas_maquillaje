@@ -6,6 +6,7 @@ import axios from "axios";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { NavbarOscura } from "@/components/layout/navbar-theme-context";
+import { siteConfig } from "@/config/site";
 import type { CategoriaDto, MarcaDto, OrdenCatalogo, PagedResult, ProductoResumen } from "@/types/catalogo";
 
 const OPCIONES_ORDEN: { valor: OrdenCatalogo; etiqueta: string }[] = [
@@ -153,14 +154,16 @@ export function CatalogoClient({ categorias, marcas, resultadoInicial, filtroIni
               ))}
             </FiltroBloque>
 
-            <FiltroBloque titulo="Marcas">
-              {marcas.map((m) => (
-                <label key={m.id} className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-text-muted hover:text-foreground">
-                  <input type="checkbox" checked={marcasSel.includes(m.slug)} onChange={() => toggleMarca(m.slug)} className="accent-accent-strong" />
-                  {m.nombre} <span className="ml-auto text-xs">({m.totalProductos})</span>
-                </label>
-              ))}
-            </FiltroBloque>
+            {siteConfig.mostrarFiltroMarcas && (
+              <FiltroBloque titulo="Marcas">
+                {marcas.map((m) => (
+                  <label key={m.id} className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-text-muted hover:text-foreground">
+                    <input type="checkbox" checked={marcasSel.includes(m.slug)} onChange={() => toggleMarca(m.slug)} className="accent-accent-strong" />
+                    {m.nombre} <span className="ml-auto text-xs">({m.totalProductos})</span>
+                  </label>
+                ))}
+              </FiltroBloque>
+            )}
 
             <FiltroBloque titulo="Disponibilidad">
               <label className="flex cursor-pointer items-center gap-2.5 py-1.5 text-sm text-text-muted hover:text-foreground">
