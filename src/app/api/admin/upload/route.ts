@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requerirAdmin } from "@/lib/admin-auth";
 import { cloudinary } from "@/lib/cloudinary";
 
 const TAMANO_MAXIMO_BYTES = 5 * 1024 * 1024;
 const TIPOS_PERMITIDOS = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user || (session.user.role !== "Administrador" && session.user.role !== "Empleado")) {
-    return NextResponse.json({ mensaje: "No autorizado." }, { status: 403 });
-  }
+  const acceso = await requerirAdmin();
+  if (acceso.error) return acceso.error;
 
   if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
     return NextResponse.json(

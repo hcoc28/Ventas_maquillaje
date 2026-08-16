@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requerirAdmin } from "@/lib/admin-auth";
 import { estadoAdminSchema } from "@/validators/admin";
 import { actualizarEstadoUsuario } from "@/server/services/usuario.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const acceso = await requerirAdmin(["Administrador"]);
+  if (acceso.error) return acceso.error;
+
   const { id } = await params;
   const body = await request.json().catch(() => null);
   const parsed = estadoAdminSchema.safeParse(body);
@@ -12,16 +15,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const session = await auth();
-
-  // El rol se asigna solo al crear la cuenta y nunca se puede reasignar después — evita que
-  // cualquier cuenta (incluida una registrada por sí misma) termine escalando privilegios.
-  // Activar/desactivar cuentas sigue restringido a Administrador.
-  if (session?.user?.role !== "Administrador") {
-    return NextResponse.json({ mensaje: "Solo un Administrador puede modificar usuarios." }, { status: 403 });
-  }
-
-  if (session?.user?.id && Number(session.user.id) === Number(id)) {
+  if (Number(acceso.session.user.id) === Number(id)) {
     return NextResponse.json({ mensaje: "No puedes modificar tu propia cuenta desde aquí." }, { status: 400 });
   }
 
@@ -32,7 +26,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     entidadId: Number(id),
     accion: "actualizar",
     valoresNuevos: parsed.data,
-    userId: session?.user?.id ? Number(session.user.id) : null,
+    userId: Number(acceso.session.user.id),
   });
 
   return NextResponse.json(usuario);

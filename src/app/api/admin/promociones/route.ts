@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { requerirAdmin } from "@/lib/admin-auth";
 import { promocionAdminSchema } from "@/validators/admin";
 import { crearPromocion } from "@/server/services/promocion.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function POST(request: NextRequest) {
+  const acceso = await requerirAdmin();
+  if (acceso.error) return acceso.error;
+
   const body = await request.json().catch(() => null);
   const parsed = promocionAdminSchema.safeParse(body);
   if (!parsed.success) {
@@ -14,13 +17,12 @@ export async function POST(request: NextRequest) {
 
   const promocion = await crearPromocion(parsed.data);
 
-  const session = await auth();
   await registrarAuditoria({
     entidad: "Promocion",
     entidadId: promocion.id,
     accion: "crear",
     valoresNuevos: parsed.data,
-    userId: session?.user?.id ? Number(session.user.id) : null,
+    userId: Number(acceso.session.user.id),
   });
 
   revalidatePath("/");

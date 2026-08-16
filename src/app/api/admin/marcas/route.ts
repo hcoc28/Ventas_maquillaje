@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { requerirAdmin } from "@/lib/admin-auth";
 import { marcaAdminSchema } from "@/validators/admin";
 import { crearMarca } from "@/server/services/marca.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function POST(request: NextRequest) {
+  const acceso = await requerirAdmin();
+  if (acceso.error) return acceso.error;
+
   const body = await request.json().catch(() => null);
   const parsed = marcaAdminSchema.safeParse(body);
   if (!parsed.success) {
@@ -14,13 +17,12 @@ export async function POST(request: NextRequest) {
 
   const marca = await crearMarca(parsed.data);
 
-  const session = await auth();
   await registrarAuditoria({
     entidad: "Marca",
     entidadId: marca.id,
     accion: "crear",
     valoresNuevos: parsed.data,
-    userId: session?.user?.id ? Number(session.user.id) : null,
+    userId: Number(acceso.session.user.id),
   });
 
   revalidatePath("/");

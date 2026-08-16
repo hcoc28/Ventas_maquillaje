@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requerirAdmin } from "@/lib/admin-auth";
 import { cuponAdminSchema } from "@/validators/admin";
 import { crearCuponAdmin } from "@/server/services/cupon.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function POST(request: NextRequest) {
+  const acceso = await requerirAdmin();
+  if (acceso.error) return acceso.error;
+
   const body = await request.json().catch(() => null);
   const parsed = cuponAdminSchema.safeParse(body);
   if (!parsed.success) {
@@ -14,13 +17,12 @@ export async function POST(request: NextRequest) {
   try {
     const cupon = await crearCuponAdmin(parsed.data);
 
-    const session = await auth();
     await registrarAuditoria({
       entidad: "Cupon",
       entidadId: cupon.id,
       accion: "crear",
       valoresNuevos: parsed.data,
-      userId: session?.user?.id ? Number(session.user.id) : null,
+      userId: Number(acceso.session.user.id),
     });
 
     return NextResponse.json(cupon, { status: 201 });

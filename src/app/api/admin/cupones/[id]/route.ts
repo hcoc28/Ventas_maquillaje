@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requerirAdmin } from "@/lib/admin-auth";
 import { cuponAdminSchema, estadoAdminSchema } from "@/validators/admin";
 import { activarCuponAdmin, actualizarCuponAdmin, desactivarCuponAdmin, eliminarCuponAdmin } from "@/server/services/cupon.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const acceso = await requerirAdmin();
+  if (acceso.error) return acceso.error;
+
   const { id } = await params;
   const body = await request.json().catch(() => null);
   const parsed = cuponAdminSchema.safeParse(body);
@@ -15,13 +18,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const cupon = await actualizarCuponAdmin(Number(id), parsed.data);
 
-    const session = await auth();
     await registrarAuditoria({
       entidad: "Cupon",
       entidadId: cupon.id,
       accion: "actualizar",
       valoresNuevos: parsed.data,
-      userId: session?.user?.id ? Number(session.user.id) : null,
+      userId: Number(acceso.session.user.id),
     });
 
     return NextResponse.json(cupon);
@@ -31,6 +33,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const acceso = await requerirAdmin();
+  if (acceso.error) return acceso.error;
+
   const { id } = await params;
   const body = await request.json().catch(() => null);
   const parsed = estadoAdminSchema.safeParse(body);
@@ -40,13 +45,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   const cupon = parsed.data.activo ? await activarCuponAdmin(Number(id)) : await desactivarCuponAdmin(Number(id));
 
-  const session = await auth();
   await registrarAuditoria({
     entidad: "Cupon",
     entidadId: Number(id),
     accion: "actualizar",
     valoresNuevos: parsed.data,
-    userId: session?.user?.id ? Number(session.user.id) : null,
+    userId: Number(acceso.session.user.id),
   });
 
   return NextResponse.json(cupon);
@@ -54,10 +58,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await auth();
-  if (session?.user?.role !== "Administrador") {
-    return NextResponse.json({ mensaje: "Solo un Administrador puede eliminar permanentemente." }, { status: 403 });
-  }
+  const acceso = await requerirAdmin(["Administrador"]);
+  if (acceso.error) return acceso.error;
 
   try {
     await eliminarCuponAdmin(Number(id));
@@ -66,7 +68,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
       entidad: "Cupon",
       entidadId: Number(id),
       accion: "eliminar",
-      userId: session?.user?.id ? Number(session.user.id) : null,
+      userId: Number(acceso.session.user.id),
     });
 
     return NextResponse.json({ ok: true });
