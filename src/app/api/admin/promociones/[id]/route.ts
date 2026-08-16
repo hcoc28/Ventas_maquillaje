@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { estadoAdminSchema, promocionAdminSchema } from "@/validators/admin";
 import { activarPromocion, actualizarPromocion, eliminarPromocion, eliminarPromocionPermanente } from "@/server/services/promocion.service";
@@ -16,7 +17,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const promocion = await actualizarPromocion(Number(id), parsed.data);
+  let promocion;
+  try {
+    promocion = await actualizarPromocion(Number(id), parsed.data);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar la promoción.");
+  }
 
   await registrarAuditoria({
     entidad: "Promocion",
@@ -42,7 +48,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const promocion = parsed.data.activo ? await activarPromocion(Number(id)) : await eliminarPromocion(Number(id));
+  let promocion;
+  try {
+    promocion = parsed.data.activo ? await activarPromocion(Number(id)) : await eliminarPromocion(Number(id));
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar la promoción.");
+  }
 
   await registrarAuditoria({
     entidad: "Promocion",
@@ -75,7 +86,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     revalidarCatalogoPublico();
 
     return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ mensaje: "No se pudo eliminar la promoción." }, { status: 400 });
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo eliminar la promoción.");
   }
 }

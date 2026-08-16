@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { bannerAdminSchema, estadoAdminSchema } from "@/validators/admin";
 import { actualizarBanner, cambiarEstadoBanner, eliminarBanner } from "@/server/services/banner.service";
 import { registrarAuditoria } from "@/server/services/log.service";
@@ -16,7 +17,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const banner = await actualizarBanner(Number(id), parsed.data);
+  let banner;
+  try {
+    banner = await actualizarBanner(Number(id), parsed.data);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar el banner.");
+  }
 
   await registrarAuditoria({
     entidad: "Banner",
@@ -36,7 +42,11 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   const acceso = await requerirAdmin(["Administrador"]);
   if (acceso.error) return acceso.error;
 
-  await eliminarBanner(Number(id));
+  try {
+    await eliminarBanner(Number(id));
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo eliminar el banner.");
+  }
 
   await registrarAuditoria({
     entidad: "Banner",
@@ -61,7 +71,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const banner = await cambiarEstadoBanner(Number(id), parsed.data.activo);
+  let banner;
+  try {
+    banner = await cambiarEstadoBanner(Number(id), parsed.data.activo);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar el banner.");
+  }
 
   await registrarAuditoria({
     entidad: "Banner",

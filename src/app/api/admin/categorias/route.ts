@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { categoriaAdminSchema } from "@/validators/admin";
 import { crearCategoria } from "@/server/services/categoria.service";
@@ -15,7 +16,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const categoria = await crearCategoria(parsed.data);
+  let categoria;
+  try {
+    categoria = await crearCategoria(parsed.data);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo crear la categoría.");
+  }
 
   await registrarAuditoria({
     entidad: "Categoria",

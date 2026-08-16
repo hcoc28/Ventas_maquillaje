@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { estadoAdminSchema, productoAdminSchema } from "@/validators/admin";
 import {
@@ -21,7 +22,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const producto = await actualizarProductoAdmin(Number(id), parsed.data);
+  let producto;
+  try {
+    producto = await actualizarProductoAdmin(Number(id), parsed.data);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar el producto.");
+  }
 
   await registrarAuditoria({
     entidad: "Producto",
@@ -51,8 +57,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   try {
     producto = parsed.data.activo ? await activarProductoAdmin(Number(id)) : await eliminarProductoAdmin(Number(id));
   } catch (error) {
-    const mensaje = error instanceof Error ? error.message : "No se pudo actualizar el producto.";
-    return NextResponse.json({ mensaje }, { status: 400 });
+    return respuestaErrorAdmin(error, "No se pudo actualizar el producto.");
   }
 
   await registrarAuditoria({
@@ -87,7 +92,6 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const mensaje = error instanceof Error ? error.message : "No se pudo eliminar el producto.";
-    return NextResponse.json({ mensaje }, { status: 400 });
+    return respuestaErrorAdmin(error, "No se pudo eliminar el producto.");
   }
 }

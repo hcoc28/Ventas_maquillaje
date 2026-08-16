@@ -31,7 +31,9 @@ export async function validarCupon(codigo: string): Promise<ResultadoValidacionC
 }
 
 export async function getTodosLosCuponesAdmin(soloActivos?: boolean) {
-  return cuponRepo.getTodosLosCupones(soloActivos);
+  const cupones = await cuponRepo.getTodosLosCupones(soloActivos);
+  // Decimal de Prisma no se puede pasar de un Server Component a la tabla "use client".
+  return cupones.map((c) => ({ ...c, porcentajeDescuento: Number(c.porcentajeDescuento) }));
 }
 
 export async function getCuponPorIdAdmin(id: number) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { cuponAdminSchema, estadoAdminSchema } from "@/validators/admin";
 import { activarCuponAdmin, actualizarCuponAdmin, desactivarCuponAdmin, eliminarCuponAdmin } from "@/server/services/cupon.service";
 import { registrarAuditoria } from "@/server/services/log.service";
@@ -27,8 +28,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     return NextResponse.json(cupon);
-  } catch {
-    return NextResponse.json({ mensaje: "Ya existe un cupón con ese código." }, { status: 400 });
+  } catch (error) {
+    return respuestaErrorAdmin(error, "Ya existe un cupón con ese código.");
   }
 }
 
@@ -43,7 +44,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const cupon = parsed.data.activo ? await activarCuponAdmin(Number(id)) : await desactivarCuponAdmin(Number(id));
+  let cupon;
+  try {
+    cupon = parsed.data.activo ? await activarCuponAdmin(Number(id)) : await desactivarCuponAdmin(Number(id));
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar el cupón.");
+  }
 
   await registrarAuditoria({
     entidad: "Cupon",
@@ -72,7 +78,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     });
 
     return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ mensaje: "No se pudo eliminar el cupón." }, { status: 400 });
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo eliminar el cupón.");
   }
 }

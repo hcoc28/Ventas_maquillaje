@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { productoAdminSchema } from "@/validators/admin";
 import { crearProductoAdmin } from "@/server/services/producto.service";
@@ -15,7 +16,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const producto = await crearProductoAdmin(parsed.data);
+  let producto;
+  try {
+    producto = await crearProductoAdmin(parsed.data);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo crear el producto.");
+  }
 
   await registrarAuditoria({
     entidad: "Producto",

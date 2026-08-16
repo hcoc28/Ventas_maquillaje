@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { pedidoEstadoAdminSchema } from "@/validators/admin";
 import { actualizarEstadoPedido } from "@/server/services/pedido.service";
 import { registrarAuditoria } from "@/server/services/log.service";
@@ -15,7 +16,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ mensaje: "Estado inválido." }, { status: 400 });
   }
 
-  const pedido = await actualizarEstadoPedido(Number(id), parsed.data.estado);
+  let pedido;
+  try {
+    pedido = await actualizarEstadoPedido(Number(id), parsed.data.estado);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar el pedido.");
+  }
 
   await registrarAuditoria({
     entidad: "Pedido",

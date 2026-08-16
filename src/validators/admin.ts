@@ -73,7 +73,7 @@ export type BannerAdminInput = z.infer<typeof bannerAdminSchema>;
 
 export const productoImagenAdminSchema = z.object({
   url: z.string().trim().url("Ingresa una URL válida.").max(500),
-  textoAlt: z.string().trim().min(1).max(200),
+  textoAlt: z.string().trim().min(1, "Ingresa un texto alternativo.").max(200),
   esPrincipal: z.boolean(),
 });
 

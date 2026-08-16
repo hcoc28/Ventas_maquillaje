@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { estadoAdminSchema, marcaAdminSchema } from "@/validators/admin";
 import { activarMarca, actualizarMarca, eliminarMarca, eliminarMarcaPermanente } from "@/server/services/marca.service";
@@ -16,7 +17,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const marca = await actualizarMarca(Number(id), parsed.data);
+  let marca;
+  try {
+    marca = await actualizarMarca(Number(id), parsed.data);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar la marca.");
+  }
 
   await registrarAuditoria({
     entidad: "Marca",
@@ -42,7 +48,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const marca = parsed.data.activo ? await activarMarca(Number(id)) : await eliminarMarca(Number(id));
+  let marca;
+  try {
+    marca = parsed.data.activo ? await activarMarca(Number(id)) : await eliminarMarca(Number(id));
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar la marca.");
+  }
 
   await registrarAuditoria({
     entidad: "Marca",
@@ -76,7 +87,6 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const mensaje = error instanceof Error ? error.message : "No se pudo eliminar la marca.";
-    return NextResponse.json({ mensaje }, { status: 400 });
+    return respuestaErrorAdmin(error, "No se pudo eliminar la marca.");
   }
 }

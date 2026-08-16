@@ -2,7 +2,9 @@ import * as promocionRepo from "@/server/repositories/promocion.repository";
 import type { PromocionAdminInput } from "@/validators/admin";
 
 export async function getTodasLasPromocionesAdmin(soloActivas?: boolean) {
-  return promocionRepo.getTodasLasPromociones(soloActivas);
+  const promociones = await promocionRepo.getTodasLasPromociones(soloActivas);
+  // Decimal de Prisma no se puede pasar de un Server Component a la tabla "use client".
+  return promociones.map((p) => ({ ...p, porcentajeDescuento: Number(p.porcentajeDescuento) }));
 }
 
 export async function getPromocionPorId(id: number) {

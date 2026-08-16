@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { estadoAdminSchema } from "@/validators/admin";
 import { actualizarEstadoSuscriptorAdmin } from "@/server/services/newsletter.service";
 import { registrarAuditoria } from "@/server/services/log.service";
@@ -15,7 +16,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const suscriptor = await actualizarEstadoSuscriptorAdmin(Number(id), parsed.data.activo);
+  let suscriptor;
+  try {
+    suscriptor = await actualizarEstadoSuscriptorAdmin(Number(id), parsed.data.activo);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar el suscriptor.");
+  }
 
   await registrarAuditoria({
     entidad: "NewsletterSubscriber",

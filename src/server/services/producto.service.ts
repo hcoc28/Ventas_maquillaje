@@ -141,12 +141,19 @@ export async function getTodosLosProductosAdmin(filtro: {
   tamanoPagina: number;
   busqueda?: string;
   soloActivos?: boolean;
-}): Promise<PagedResult<ProductoConRelaciones>> {
+}) {
   const { pagina, tamanoPagina } = filtro;
   const { items, total } = await productoRepo.getTodosLosProductosAdmin(filtro);
 
   return {
-    items,
+    // Los objetos Decimal de Prisma no se pueden pasar de un Server Component a un Client
+    // Component (esta lista se renderiza en una tabla "use client") — hay que convertirlos
+    // a number antes de que el resultado cruce esa frontera.
+    items: items.map((p) => ({
+      ...p,
+      precio: Number(p.precio),
+      promotion: p.promotion ? { ...p.promotion, porcentajeDescuento: Number(p.promotion.porcentajeDescuento) } : null,
+    })),
     pagina,
     tamanoPagina,
     totalRegistros: total,

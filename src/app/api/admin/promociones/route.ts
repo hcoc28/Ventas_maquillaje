@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { promocionAdminSchema } from "@/validators/admin";
 import { crearPromocion } from "@/server/services/promocion.service";
@@ -15,7 +16,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const promocion = await crearPromocion(parsed.data);
+  let promocion;
+  try {
+    promocion = await crearPromocion(parsed.data);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo crear la promoción.");
+  }
 
   await registrarAuditoria({
     entidad: "Promocion",

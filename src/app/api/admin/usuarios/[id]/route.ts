@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { estadoAdminSchema } from "@/validators/admin";
 import { actualizarEstadoUsuario } from "@/server/services/usuario.service";
 import { registrarAuditoria } from "@/server/services/log.service";
@@ -19,7 +20,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ mensaje: "No puedes modificar tu propia cuenta desde aquí." }, { status: 400 });
   }
 
-  const usuario = await actualizarEstadoUsuario(Number(id), parsed.data.activo);
+  let usuario;
+  try {
+    usuario = await actualizarEstadoUsuario(Number(id), parsed.data.activo);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar el usuario.");
+  }
 
   await registrarAuditoria({
     entidad: "Usuario",

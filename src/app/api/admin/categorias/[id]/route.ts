@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { respuestaErrorAdmin } from "@/lib/api-errors";
 import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { categoriaAdminSchema, estadoAdminSchema } from "@/validators/admin";
 import { activarCategoria, actualizarCategoria, eliminarCategoria, eliminarCategoriaPermanente } from "@/server/services/categoria.service";
@@ -16,7 +17,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const categoria = await actualizarCategoria(Number(id), parsed.data);
+  let categoria;
+  try {
+    categoria = await actualizarCategoria(Number(id), parsed.data);
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar la categoría.");
+  }
 
   await registrarAuditoria({
     entidad: "Categoria",
@@ -42,7 +48,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const categoria = parsed.data.activo ? await activarCategoria(Number(id)) : await eliminarCategoria(Number(id));
+  let categoria;
+  try {
+    categoria = parsed.data.activo ? await activarCategoria(Number(id)) : await eliminarCategoria(Number(id));
+  } catch (error) {
+    return respuestaErrorAdmin(error, "No se pudo actualizar la categoría.");
+  }
 
   await registrarAuditoria({
     entidad: "Categoria",
@@ -76,7 +87,6 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const mensaje = error instanceof Error ? error.message : "No se pudo eliminar la categoría.";
-    return NextResponse.json({ mensaje }, { status: 400 });
+    return respuestaErrorAdmin(error, "No se pudo eliminar la categoría.");
   }
 }
