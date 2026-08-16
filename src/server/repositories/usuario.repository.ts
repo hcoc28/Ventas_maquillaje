@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/prisma";
 
+export function normalizarEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
 export async function getUsuarioPorEmail(email: string) {
-  return prisma.user.findUnique({ where: { email }, include: { role: true } });
+  return prisma.user.findUnique({ where: { email: normalizarEmail(email) }, include: { role: true } });
 }
 
 export async function getUsuarioPorId(id: number) {
@@ -22,7 +26,7 @@ export async function crearUsuario(data: {
     data: {
       nombre: data.nombre,
       apellido: data.apellido,
-      email: data.email,
+      email: normalizarEmail(data.email),
       passwordHash: data.passwordHash,
       telefono: data.telefono,
       roleId: role.id,

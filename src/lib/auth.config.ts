@@ -23,11 +23,15 @@ export const authConfig: NextAuthConfig = {
       // no golpea la base de datos en cada vista pública del catálogo).
       if (token.id) {
         const usuario = await getUsuarioPorId(Number(token.id));
-        if (!usuario || !usuario.activo) {
+        if (!usuario || !usuario.activo || usuario.deletedAt) {
           token.id = undefined;
           token.role = undefined;
+          token.name = undefined;
+          token.email = undefined;
           return token;
         }
+        token.name = `${usuario.nombre} ${usuario.apellido}`;
+        token.email = usuario.email;
         token.role = usuario.role.nombre;
       }
 
@@ -37,6 +41,8 @@ export const authConfig: NextAuthConfig = {
       if (session.user) {
         session.user.id = (token.id as string) ?? "";
         session.user.role = (token.role as string) ?? "";
+        session.user.name = token.name ?? "";
+        session.user.email = token.email ?? "";
       }
       return session;
     },
