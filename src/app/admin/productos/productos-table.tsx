@@ -136,8 +136,8 @@ export function ProductosTable({
                       <span className="font-medium">{p.nombre}</span>
                     </div>
                   </td>
-                  <td className="px-5 py-3 text-text-muted">{p.category.nombre}</td>
-                  <td className="px-5 py-3 text-text-muted">{p.brand.nombre}</td>
+                  <td className="px-5 py-3 text-text-muted">{p.category?.nombre ?? "Sin categoría"}</td>
+                  <td className="px-5 py-3 text-text-muted">{p.brand?.nombre ?? "Sin marca"}</td>
                   <td className="px-5 py-3">{formatearMoneda(Number(p.precio))}</td>
                   <td className="px-5 py-3">
                     <span className={bajoStock ? "font-semibold text-red-600" : ""}>{stock}</span>

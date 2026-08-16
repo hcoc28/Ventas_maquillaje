@@ -63,7 +63,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
     name: producto.nombre,
     description: producto.descripcionCorta,
     image: producto.imagenes.map((img) => img.url),
-    brand: { "@type": "Brand", name: producto.marcaNombre },
+    ...(producto.marcaNombre && { brand: { "@type": "Brand", name: producto.marcaNombre } }),
     offers: {
       "@type": "Offer",
       url: `${siteConfig.url}/producto/${slug}`,
@@ -85,13 +85,17 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Inicio", item: siteConfig.url },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: producto.categoriaNombre,
-        item: `${siteConfig.url}/catalogo?categoria=${producto.categoriaSlug}`,
-      },
-      { "@type": "ListItem", position: 3, name: producto.nombre, item: `${siteConfig.url}/producto/${slug}` },
+      ...(producto.categoriaNombre && producto.categoriaSlug
+        ? [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: producto.categoriaNombre,
+              item: `${siteConfig.url}/catalogo?categoria=${producto.categoriaSlug}`,
+            },
+          ]
+        : []),
+      { "@type": "ListItem", position: producto.categoriaNombre ? 3 : 2, name: producto.nombre, item: `${siteConfig.url}/producto/${slug}` },
     ],
   };
 
@@ -101,7 +105,11 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(breadcrumbJsonLd) }} />
       <nav className="mb-6 text-xs text-text-muted">
         <Link href="/" className="hover:text-foreground">Inicio</Link> /{" "}
-        <Link href={`/catalogo?categoria=${producto.categoriaSlug}`} className="hover:text-foreground">{producto.categoriaNombre}</Link> /{" "}
+        {producto.categoriaNombre && producto.categoriaSlug && (
+          <>
+            <Link href={`/catalogo?categoria=${producto.categoriaSlug}`} className="hover:text-foreground">{producto.categoriaNombre}</Link> /{" "}
+          </>
+        )}
         <span>{producto.nombre}</span>
       </nav>
 
@@ -109,7 +117,7 @@ export default async function ProductoPage({ params }: ProductoPageProps) {
         <ProductGallery imagenes={producto.imagenes} nombre={producto.nombre} />
 
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-accent-strong">{producto.marcaNombre}</span>
+          {producto.marcaNombre && <span className="text-xs font-semibold uppercase tracking-wider text-accent-strong">{producto.marcaNombre}</span>}
           <h1 className="mb-2 mt-1 font-[family-name:var(--font-display)] text-3xl sm:text-4xl">{producto.nombre}</h1>
 
           <div className="mb-4 flex items-center gap-1 text-brand-gold">

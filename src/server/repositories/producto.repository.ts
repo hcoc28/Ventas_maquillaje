@@ -21,9 +21,9 @@ async function buscarIdsPorTermino(termino: string): Promise<number[]> {
   const filas = await prisma.$queryRaw<{ id: number }[]>(Prisma.sql`
     SELECT DISTINCT p.id
     FROM products p
-    INNER JOIN brands b ON b.id = p.brand_id
+    LEFT JOIN brands b ON b.id = p.brand_id
     WHERE p.activo = 1
-      AND b.activo = 1
+      AND (p.brand_id IS NULL OR b.activo = 1)
       AND (
         p.nombre COLLATE Latin1_General_CI_AI LIKE '%' + ${termino} + '%'
         OR p.descripcion_corta COLLATE Latin1_General_CI_AI LIKE '%' + ${termino} + '%'
@@ -33,9 +33,15 @@ async function buscarIdsPorTermino(termino: string): Promise<number[]> {
   return filas.map((f) => f.id);
 }
 
+const productoVisibleWhere: Prisma.ProductWhereInput = {
+  activo: true,
+  OR: [{ categoryId: null }, { category: { activo: true } }],
+  AND: [{ OR: [{ brandId: null }, { brand: { activo: true } }] }],
+};
+
 export async function buscarProductos(filtro: FiltroProducto) {
   const ahora = new Date();
-  const where: Prisma.ProductWhereInput = { activo: true, category: { activo: true }, brand: { activo: true } };
+  const where: Prisma.ProductWhereInput = { ...productoVisibleWhere };
 
   if (filtro.busqueda?.trim()) {
     const ids = await buscarIdsPorTermino(filtro.busqueda.trim());
@@ -106,7 +112,7 @@ export async function buscarProductos(filtro: FiltroProducto) {
 
 export async function getSlugsActivos(): Promise<string[]> {
   const productos = await prisma.product.findMany({
-    where: { activo: true, category: { activo: true }, brand: { activo: true } },
+    where: productoVisibleWhere,
     select: { slug: true },
   });
   return productos.map((p) => p.slug);
@@ -115,14 +121,14 @@ export async function getSlugsActivos(): Promise<string[]> {
 /** Solo lo esencial para el sitemap — evita traer todas las relaciones (categoría, marca, imágenes, etc). */
 export async function getSlugsYFechasActivos(): Promise<{ slug: string; updatedAt: Date }[]> {
   return prisma.product.findMany({
-    where: { activo: true, category: { activo: true }, brand: { activo: true } },
+    where: productoVisibleWhere,
     select: { slug: true, updatedAt: true },
   });
 }
 
 export async function getProductoBySlug(slug: string) {
   return prisma.product.findFirst({
-    where: { slug, activo: true, category: { activo: true }, brand: { activo: true } },
+    where: { ...productoVisibleWhere, slug },
     include: includeCompleto,
   });
 }
@@ -130,14 +136,14 @@ export async function getProductoBySlug(slug: string) {
 export async function getProductosPorIds(ids: number[]) {
   if (ids.length === 0) return [];
   return prisma.product.findMany({
-    where: { id: { in: ids }, activo: true, category: { activo: true }, brand: { activo: true } },
+    where: { ...productoVisibleWhere, id: { in: ids } },
     include: includeCompleto,
   });
 }
 
 export async function getDestacados(cantidad: number) {
   return prisma.product.findMany({
-    where: { activo: true, category: { activo: true }, brand: { activo: true } },
+    where: productoVisibleWhere,
     include: includeCompleto,
     orderBy: [{ reviews: { _count: "desc" } }, { createdAt: "desc" }],
     take: cantidad,
@@ -146,7 +152,7 @@ export async function getDestacados(cantidad: number) {
 
 export async function getNuevos(cantidad: number) {
   return prisma.product.findMany({
-    where: { activo: true, esNuevo: true, category: { activo: true }, brand: { activo: true } },
+    where: { ...productoVisibleWhere, esNuevo: true },
     include: includeCompleto,
     orderBy: { createdAt: "desc" },
     take: cantidad,
@@ -155,7 +161,7 @@ export async function getNuevos(cantidad: number) {
 
 export async function getMasVendidos(cantidad: number) {
   return prisma.product.findMany({
-    where: { activo: true, orderDetails: { some: {} }, category: { activo: true }, brand: { activo: true } },
+    where: { ...productoVisibleWhere, orderDetails: { some: {} } },
     include: includeCompleto,
     orderBy: { orderDetails: { _count: "desc" } },
     take: cantidad,
@@ -166,9 +172,7 @@ export async function getEnPromocion(cantidad: number) {
   const ahora = new Date();
   return prisma.product.findMany({
     where: {
-      activo: true,
-      category: { activo: true },
-      brand: { activo: true },
+      ...productoVisibleWhere,
       promotionId: { not: null },
       promotion: { activo: true, fechaInicio: { lte: ahora }, fechaFin: { gte: ahora } },
     },
@@ -178,9 +182,9 @@ export async function getEnPromocion(cantidad: number) {
   });
 }
 
-export async function getRelacionados(productoId: number, categoryId: number, cantidad: number) {
+export async function getRelacionados(productoId: number, categoryId: number | null, cantidad: number) {
   return prisma.product.findMany({
-    where: { activo: true, id: { not: productoId }, categoryId, category: { activo: true }, brand: { activo: true } },
+    where: { ...productoVisibleWhere, id: { not: productoId }, ...(categoryId ? { categoryId } : {}) },
     include: includeCompleto,
     orderBy: { createdAt: "desc" },
     take: cantidad,
@@ -189,7 +193,7 @@ export async function getRelacionados(productoId: number, categoryId: number, ca
 
 export async function getIdsMasVendidos(cantidad: number): Promise<Set<number>> {
   const productos = await prisma.product.findMany({
-    where: { activo: true, orderDetails: { some: {} }, category: { activo: true }, brand: { activo: true } },
+    where: { ...productoVisibleWhere, orderDetails: { some: {} } },
     orderBy: { orderDetails: { _count: "desc" } },
     take: cantidad,
     select: { id: true },
@@ -253,8 +257,8 @@ function datosProducto(data: ProductoAdminInput) {
     esNuevo: data.esNuevo,
     esEdicionLimitada: data.esEdicionLimitada,
     activo: data.activo,
-    categoryId: data.categoryId,
-    brandId: data.brandId,
+    categoryId: data.categoryId || null,
+    brandId: data.brandId || null,
     promotionId: data.promotionId || null,
   };
 }

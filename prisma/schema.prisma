@@ -139,15 +139,15 @@ model Product {
   esNuevo           Boolean   @default(false) @map("es_nuevo")
   esEdicionLimitada Boolean   @default(false) @map("es_edicion_limitada")
   activo            Boolean   @default(true)
-  categoryId        Int       @map("category_id")
-  brandId           Int       @map("brand_id")
+  categoryId        Int?      @map("category_id")
+  brandId           Int?      @map("brand_id")
   promotionId       Int?      @map("promotion_id")
   deletedAt         DateTime? @map("deleted_at")
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  category     Category       @relation(fields: [categoryId], references: [id])
-  brand        Brand          @relation(fields: [brandId], references: [id])
+  category     Category?      @relation(fields: [categoryId], references: [id])
+  brand        Brand?         @relation(fields: [brandId], references: [id])
   promotion    Promotion?     @relation(fields: [promotionId], references: [id])
   images       ProductImage[]
   inventory    Inventory?

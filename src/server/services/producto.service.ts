@@ -42,10 +42,10 @@ function mapearResumen(
     precio: Number(producto.precio),
     precioFinal: precioFinal(producto),
     porcentajeDescuento: vigente ? Number(producto.promotion!.porcentajeDescuento) : null,
-    categoriaNombre: producto.category.nombre,
-    categoriaSlug: producto.category.slug,
-    marcaNombre: producto.brand.nombre,
-    marcaSlug: producto.brand.slug,
+    categoriaNombre: producto.category?.nombre ?? null,
+    categoriaSlug: producto.category?.slug ?? null,
+    marcaNombre: producto.brand?.nombre ?? null,
+    marcaSlug: producto.brand?.slug ?? null,
     hayStock: (producto.inventory?.stock ?? 0) > 0,
     esNuevo: producto.esNuevo,
     esEdicionLimitada: producto.esEdicionLimitada,
@@ -182,10 +182,10 @@ export async function activarProductoAdmin(id: number) {
   if (!producto) {
     throw new Error("Producto no encontrado.");
   }
-  if (!producto.category.activo) {
+  if (producto.category && !producto.category.activo) {
     throw new Error(`No se puede mostrar este producto porque la categoría "${producto.category.nombre}" está inactiva.`);
   }
-  if (!producto.brand.activo) {
+  if (producto.brand && !producto.brand.activo) {
     throw new Error(`No se puede mostrar este producto porque la marca "${producto.brand.nombre}" está inactiva.`);
   }
   return productoRepo.activarProductoAdmin(id);

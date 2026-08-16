@@ -51,8 +51,8 @@ export function ProductoForm({
       esNuevo: false,
       esEdicionLimitada: false,
       activo: true,
-      categoryId: opciones.categorias[0]?.id ?? 0,
-      brandId: opciones.marcas[0]?.id ?? 0,
+      categoryId: null,
+      brandId: null,
       promotionId: null,
       stock: 0,
       stockMinimo: 5,
@@ -62,6 +62,8 @@ export function ProductoForm({
 
   const { fields, append, remove } = useFieldArray({ control, name: "imagenes" });
 
+  const categoryId = useWatch({ control, name: "categoryId" });
+  const brandId = useWatch({ control, name: "brandId" });
   const promotionId = useWatch({ control, name: "promotionId" });
   const esNuevo = useWatch({ control, name: "esNuevo" });
   const esEdicionLimitada = useWatch({ control, name: "esEdicionLimitada" });
@@ -132,7 +134,12 @@ export function ProductoForm({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Campo label="Categoría" error={errors.categoryId?.message}>
-          <select {...register("categoryId", { valueAsNumber: true })} className={inputClass}>
+          <select
+            value={categoryId ?? ""}
+            onChange={(e) => setValue("categoryId", e.target.value ? Number(e.target.value) : null, { shouldValidate: true })}
+            className={inputClass}
+          >
+            <option value="">Sin categoría</option>
             {opciones.categorias.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.nombre}
@@ -141,7 +148,12 @@ export function ProductoForm({
           </select>
         </Campo>
         <Campo label="Marca" error={errors.brandId?.message}>
-          <select {...register("brandId", { valueAsNumber: true })} className={inputClass}>
+          <select
+            value={brandId ?? ""}
+            onChange={(e) => setValue("brandId", e.target.value ? Number(e.target.value) : null, { shouldValidate: true })}
+            className={inputClass}
+          >
+            <option value="">Sin marca</option>
             {opciones.marcas.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.nombre}

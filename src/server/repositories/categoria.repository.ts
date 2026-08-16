@@ -15,7 +15,7 @@ export async function getConteoProductosPorCategoria(): Promise<Map<number, numb
     where: { activo: true },
     _count: { _all: true },
   });
-  return new Map(grupos.map((g) => [g.categoryId, g._count._all]));
+  return new Map(grupos.filter((g) => g.categoryId !== null).map((g) => [g.categoryId!, g._count._all]));
 }
 
 export async function getTodasLasCategorias(soloActivas?: boolean) {

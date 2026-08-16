@@ -7,10 +7,10 @@ export interface ProductoResumen {
   precio: number;
   precioFinal: number;
   porcentajeDescuento: number | null;
-  categoriaNombre: string;
-  categoriaSlug: string;
-  marcaNombre: string;
-  marcaSlug: string;
+  categoriaNombre: string | null;
+  categoriaSlug: string | null;
+  marcaNombre: string | null;
+  marcaSlug: string | null;
   hayStock: boolean;
   esNuevo: boolean;
   esEdicionLimitada: boolean;

@@ -15,7 +15,7 @@ export async function getConteoProductosPorMarca(): Promise<Map<number, number>>
     where: { activo: true },
     _count: { _all: true },
   });
-  return new Map(grupos.map((g) => [g.brandId, g._count._all]));
+  return new Map(grupos.filter((g) => g.brandId !== null).map((g) => [g.brandId!, g._count._all]));
 }
 
 export async function getTodasLasMarcas(soloActivas?: boolean) {
