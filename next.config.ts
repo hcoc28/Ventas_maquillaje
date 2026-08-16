@@ -4,6 +4,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 // 'unsafe-eval' solo hace falta en desarrollo (React lo usa para reconstruir stack traces del
 // servidor en el navegador) — ni React ni Next.js lo necesitan en producción por defecto.
 const esDesarrollo = process.env.NODE_ENV === "development";
+const usarStandalone = process.env.NEXT_STANDALONE === "true" && !process.env.VERCEL;
 
 const csp = [
   "default-src 'self'",
@@ -31,7 +32,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  ...(usarStandalone ? { output: "standalone" as const } : {}),
   allowedDevOrigins: ["pouch-swimwear-freedom.ngrok-free.dev"],
   images: {
     remotePatterns: [

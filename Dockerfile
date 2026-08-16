@@ -10,6 +10,7 @@ RUN npm ci
 
 FROM node:22-slim AS builder
 WORKDIR /app
+ENV NEXT_STANDALONE=true
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
