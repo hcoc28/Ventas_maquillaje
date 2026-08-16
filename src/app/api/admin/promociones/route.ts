@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { promocionAdminSchema } from "@/validators/admin";
 import { crearPromocion } from "@/server/services/promocion.service";
 import { registrarAuditoria } from "@/server/services/log.service";
@@ -25,8 +25,7 @@ export async function POST(request: NextRequest) {
     userId: Number(acceso.session.user.id),
   });
 
-  revalidatePath("/");
-  revalidatePath("/producto/[slug]", "page");
+  revalidarCatalogoPublico();
 
   return NextResponse.json(promocion, { status: 201 });
 }

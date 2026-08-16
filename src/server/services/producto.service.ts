@@ -171,6 +171,16 @@ export async function eliminarProductoAdmin(id: number) {
 }
 
 export async function activarProductoAdmin(id: number) {
+  const producto = await productoRepo.getProductoById(id);
+  if (!producto) {
+    throw new Error("Producto no encontrado.");
+  }
+  if (!producto.category.activo) {
+    throw new Error(`No se puede mostrar este producto porque la categoría "${producto.category.nombre}" está inactiva.`);
+  }
+  if (!producto.brand.activo) {
+    throw new Error(`No se puede mostrar este producto porque la marca "${producto.brand.nombre}" está inactiva.`);
+  }
   return productoRepo.activarProductoAdmin(id);
 }
 

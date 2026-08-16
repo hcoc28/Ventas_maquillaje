@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { aprobarOpinionAdmin, eliminarOpinionAdmin } from "@/server/services/opinion.service";
 import { registrarAuditoria } from "@/server/services/log.service";
 
@@ -19,7 +19,7 @@ export async function PATCH(_request: NextRequest, { params }: { params: Promise
     userId: Number(acceso.session.user.id),
   });
 
-  revalidatePath("/producto/[slug]", "page");
+  revalidarCatalogoPublico();
 
   return NextResponse.json(opinion);
 }
@@ -38,7 +38,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     userId: Number(acceso.session.user.id),
   });
 
-  revalidatePath("/producto/[slug]", "page");
+  revalidarCatalogoPublico();
 
   return NextResponse.json({ ok: true });
 }

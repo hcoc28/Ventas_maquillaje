@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { estadoAdminSchema, productoAdminSchema } from "@/validators/admin";
 import {
   activarProductoAdmin,
@@ -31,8 +31,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     userId: Number(acceso.session.user.id),
   });
 
-  revalidatePath("/");
-  revalidatePath("/producto/[slug]", "page");
+  revalidarCatalogoPublico();
 
   return NextResponse.json(producto);
 }
@@ -48,7 +47,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ mensaje: parsed.error.issues[0]?.message ?? "Datos inválidos." }, { status: 400 });
   }
 
-  const producto = parsed.data.activo ? await activarProductoAdmin(Number(id)) : await eliminarProductoAdmin(Number(id));
+  let producto;
+  try {
+    producto = parsed.data.activo ? await activarProductoAdmin(Number(id)) : await eliminarProductoAdmin(Number(id));
+  } catch (error) {
+    const mensaje = error instanceof Error ? error.message : "No se pudo actualizar el producto.";
+    return NextResponse.json({ mensaje }, { status: 400 });
+  }
 
   await registrarAuditoria({
     entidad: "Producto",
@@ -58,8 +63,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     userId: Number(acceso.session.user.id),
   });
 
-  revalidatePath("/");
-  revalidatePath("/producto/[slug]", "page");
+  revalidarCatalogoPublico();
 
   return NextResponse.json(producto);
 }
@@ -79,8 +83,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
       userId: Number(acceso.session.user.id),
     });
 
-    revalidatePath("/");
-    revalidatePath("/catalogo");
+    revalidarCatalogoPublico();
 
     return NextResponse.json({ ok: true });
   } catch (error) {

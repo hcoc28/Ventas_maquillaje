@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import { requerirAdmin } from "@/lib/admin-auth";
+import { revalidarCatalogoPublico } from "@/lib/public-cache";
 import { estadoAdminSchema, promocionAdminSchema } from "@/validators/admin";
 import { activarPromocion, actualizarPromocion, eliminarPromocion, eliminarPromocionPermanente } from "@/server/services/promocion.service";
 import { registrarAuditoria } from "@/server/services/log.service";
@@ -26,8 +26,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     userId: Number(acceso.session.user.id),
   });
 
-  revalidatePath("/");
-  revalidatePath("/producto/[slug]", "page");
+  revalidarCatalogoPublico();
 
   return NextResponse.json(promocion);
 }
@@ -53,8 +52,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     userId: Number(acceso.session.user.id),
   });
 
-  revalidatePath("/");
-  revalidatePath("/producto/[slug]", "page");
+  revalidarCatalogoPublico();
 
   return NextResponse.json(promocion);
 }
@@ -74,8 +72,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
       userId: Number(acceso.session.user.id),
     });
 
-    revalidatePath("/");
-    revalidatePath("/producto/[slug]", "page");
+    revalidarCatalogoPublico();
 
     return NextResponse.json({ ok: true });
   } catch {

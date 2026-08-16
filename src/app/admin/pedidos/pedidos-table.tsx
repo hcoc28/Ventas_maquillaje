@@ -24,7 +24,7 @@ export function PedidosTable({ resultado, estadoInicial }: { resultado: Resultad
   const router = useRouter();
   const { mostrar } = useToast();
   const pedidos = resultado.items;
-  const [estados, setEstados] = useState(new Map(pedidos.map((p) => [p.id, p.estado])));
+  const [estadosEditados, setEstadosEditados] = useState(new Map<number, string>());
   const [guardando, setGuardando] = useState<number | null>(null);
 
   function irAPagina(p: number) {
@@ -45,8 +45,9 @@ export function PedidosTable({ resultado, estadoInicial }: { resultado: Resultad
     setGuardando(id);
     try {
       await axios.put(`/api/admin/pedidos/${id}`, { estado });
-      setEstados((prev) => new Map(prev).set(id, estado));
+      setEstadosEditados((prev) => new Map(prev).set(id, estado));
       mostrar("Estado del pedido actualizado.");
+      router.refresh();
     } catch {
       mostrar("No se pudo actualizar el estado.", "error");
     } finally {
@@ -88,7 +89,7 @@ export function PedidosTable({ resultado, estadoInicial }: { resultado: Resultad
         </thead>
         <tbody className="divide-y divide-border">
           {pedidos.map((p) => {
-            const estado = estados.get(p.id) ?? p.estado;
+            const estado = estadosEditados.get(p.id) ?? p.estado;
             return (
               <tr key={p.id}>
                 <td className="px-5 py-3 font-medium">{p.numeroPedido}</td>
