@@ -61,16 +61,18 @@ prisma/
    - `NEXT_PUBLIC_WHATSAPP_NUMBER`: número (con código de país, sin `+`) usado para el checkout por WhatsApp.
    - Variables de `CLOUDINARY_*`: necesarias para subir archivos de imagen desde el panel administrativo. Sin ellas, los campos de imagen siguen aceptando una URL directa, pero el botón "Subir" fallará.
    - `SEED_ADMIN_EMAIL`: correo del administrador inicial. Si no se define, usa `amour@gmail.com`.
-   - `SEED_ADMIN_PASSWORD`: contraseña obligatoria para crear o actualizar el administrador inicial con `npm run db:seed`.
+   - `SEED_ADMIN_PASSWORD`: contraseña obligatoria para preparar el administrador inicial con `npm run db:seed`.
 
-3. Aplica las migraciones y crea el administrador inicial:
+3. Aplica las migraciones y prepara la base limpia de entrega:
 
    ```bash
    npx prisma migrate dev
    npm run db:seed
    ```
 
-   Esto crea o actualiza los roles base y el usuario administrador inicial. No crea productos, categorías, marcas, promociones, banners, clientes, pedidos ni reseñas de prueba.
+   Esto deja la base sin contenido operativo: borra productos, categorías, marcas, promociones, banners, cupones, pedidos, clientes, carritos, reseñas, contactos, newsletter y logs; luego crea o actualiza los roles base y el administrador inicial (`amour@gmail.com` por defecto).
+
+   > Ejecuta este seed solo antes de entregar o reiniciar la tienda. No lo ejecutes después de cargar datos reales.
 
 ## Desarrollo
 
@@ -92,7 +94,7 @@ Abre [http://localhost:3000](http://localhost:3000).
 | `npm test` | Ejecuta la suite de pruebas (Vitest) una sola vez |
 | `npm run test:watch` | Ejecuta la suite de pruebas en modo watch |
 | `npm run db:migrate` | Aplica migraciones pendientes (`prisma migrate deploy`) |
-| `npm run db:seed` | Crea o actualiza roles base y el administrador inicial |
+| `npm run db:seed` | Limpia la base para entrega y deja solo roles base + administrador inicial |
 
 ## Panel administrativo
 

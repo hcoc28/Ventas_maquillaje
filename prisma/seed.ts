@@ -15,109 +15,35 @@ const adapter = new PrismaMssql({
 const prisma = new PrismaClient({ adapter });
 
 const ADMIN_EMAIL_DEFAULT = "amour@gmail.com";
-const ADMIN_EMAIL_ANTERIOR = "admin@eclatmaquillaje.com";
-const EMAILS_CLIENTES_DEMO = ["maria.gonzalez@example.com", "ana.martinez@example.com", "lucia.ramirez@example.com"];
-const PEDIDOS_DEMO = Array.from({ length: 8 }, (_, index) => `ORD-2026-${1000 + index}`);
-const CATEGORIAS_DEMO = [
-  "labiales",
-  "bases",
-  "correctores",
-  "rubores",
-  "sombras",
-  "mascaras",
-  "delineadores",
-  "brochas",
-  "iluminadores",
-  "polvos",
-  "skincare",
-];
-const MARCAS_DEMO = [
-  "lumiere-paris",
-  "velvet-noir",
-  "rose-atelier",
-  "maison-eclat",
-  "nova-beauty",
-  "satin-silk",
-  "bloom-cosmetics",
-  "ombre-luxe",
-];
-const PROMOCIONES_DEMO = ["Venta de Verano", "Black Friday Beauty", "Skincare Week", "Edición Especial Ojos"];
-const BANNERS_DEMO = [
-  "Belleza que se define en ti",
-  "Edición Limitada Midnight",
-  "Skincare que transforma",
-  "Hasta 30% de descuento",
-];
-const PRODUCTOS_DEMO = [
-  "labial-velvet-rouge",
-  "labial-satin-kiss",
-  "labial-gloss-diamond",
-  "base-hd-perfeccion-infinita",
-  "base-velvet-matte-24h",
-  "base-luminous-skin-tint",
-  "corrector-bright-eyes",
-  "corrector-full-coverage-pro",
-  "rubor-blossom-glow",
-  "rubor-cream-flush",
-  "paleta-sombras-sunset-muse",
-  "paleta-sombras-midnight-velvet",
-  "mascara-volume-extreme",
-  "mascara-curl-lift-48h",
-  "delineador-precision-ink",
-  "delineador-gel-waterproof",
-  "set-brochas-luxe-collection",
-  "brocha-kabuki-base-perfecta",
-  "iluminador-liquid-glow",
-  "iluminador-en-polvo-diamond-dust",
-  "polvo-compacto-matte-finish",
-  "polvo-suelto-hd-setting",
-  "serum-vitamina-c-radiance",
-  "crema-hidratante-24h-barrier",
-  "protector-solar-invisible-spf50",
-  "serum-acido-hialuronico-plump",
-  "contorno-de-ojos-renew",
-  "labial-liquid-matte-extreme",
-  "base-cushion-glow-compact",
-  "paleta-rubor-iluminador-duo",
-  "sombra-individual-metallic-foil",
-  "brocha-difuminadora-sombras-pro",
-  "mascarilla-facial-detox-clay",
-];
 
-async function limpiarDatosDemo() {
-  console.log("Limpiando datos demo conocidos...");
+async function limpiarBaseParaEntrega(adminEmail: string) {
+  console.log("Limpiando contenido operativo de la tienda...");
 
-  await prisma.review.deleteMany({
+  await prisma.auditLog.deleteMany();
+  await prisma.activityLog.deleteMany();
+  await prisma.passwordResetToken.deleteMany();
+  await prisma.contactMessage.deleteMany();
+  await prisma.newsletterSubscriber.deleteMany();
+
+  await prisma.review.deleteMany();
+  await prisma.favorite.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.cart.deleteMany();
+  await prisma.orderDetail.deleteMany();
+  await prisma.order.deleteMany();
+
+  await prisma.product.deleteMany();
+  await prisma.coupon.deleteMany();
+  await prisma.banner.deleteMany();
+  await prisma.promotion.deleteMany();
+  await prisma.brand.deleteMany();
+  await prisma.category.deleteMany();
+
+  await prisma.user.deleteMany({
     where: {
-      OR: [
-        { user: { email: { in: EMAILS_CLIENTES_DEMO } } },
-        { product: { slug: { in: PRODUCTOS_DEMO } } },
-      ],
+      email: { not: adminEmail },
     },
   });
-  await prisma.order.deleteMany({ where: { numeroPedido: { in: PEDIDOS_DEMO } } });
-  await prisma.cartItem.deleteMany({ where: { product: { slug: { in: PRODUCTOS_DEMO } } } });
-  await prisma.cartItem.deleteMany({ where: { cart: { user: { email: { in: EMAILS_CLIENTES_DEMO } } } } });
-  await prisma.cart.deleteMany({ where: { user: { email: { in: EMAILS_CLIENTES_DEMO } } } });
-  await prisma.favorite.deleteMany({ where: { product: { slug: { in: PRODUCTOS_DEMO } } } });
-  await prisma.product.updateMany({
-    where: { slug: { in: PRODUCTOS_DEMO } },
-    data: { activo: false, deletedAt: new Date() },
-  });
-  await prisma.product.deleteMany({
-    where: {
-      slug: { in: PRODUCTOS_DEMO },
-      orderDetails: { none: {} },
-      reviews: { none: {} },
-      favorites: { none: {} },
-      cartItems: { none: {} },
-    },
-  });
-  await prisma.user.deleteMany({ where: { email: { in: EMAILS_CLIENTES_DEMO } } });
-  await prisma.banner.deleteMany({ where: { titulo: { in: BANNERS_DEMO } } });
-  await prisma.promotion.deleteMany({ where: { nombre: { in: PROMOCIONES_DEMO }, products: { none: {} } } });
-  await prisma.brand.deleteMany({ where: { slug: { in: MARCAS_DEMO }, products: { none: {} } } });
-  await prisma.category.deleteMany({ where: { slug: { in: CATEGORIAS_DEMO }, products: { none: {} } } });
 }
 
 async function main() {
@@ -138,6 +64,8 @@ async function main() {
       "SEED_ADMIN_PASSWORD es obligatorio para crear o actualizar el administrador inicial."
     );
   }
+
+  await limpiarBaseParaEntrega(adminEmail);
 
   console.log("Preparando usuario administrador...");
   const passwordHash = await bcrypt.hash(adminPassword, 12);
@@ -162,19 +90,7 @@ async function main() {
     },
   });
 
-  if (adminEmail !== ADMIN_EMAIL_ANTERIOR) {
-    await prisma.user.updateMany({
-      where: { email: ADMIN_EMAIL_ANTERIOR },
-      data: {
-        activo: false,
-        deletedAt: new Date(),
-      },
-    });
-  }
-
-  await limpiarDatosDemo();
-
-  console.log("Seed minimo completado.");
+  console.log("Seed de entrega completado.");
 }
 
 main()
