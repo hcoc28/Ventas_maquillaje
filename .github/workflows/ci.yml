@@ -34,6 +34,8 @@ jobs:
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
       NEXT_PUBLIC_WHATSAPP_NUMBER: "50200000000"
       AUTH_SECRET: "ci-only-secret-not-for-production"
+      SEED_ADMIN_EMAIL: "amour@gmail.com"
+      SEED_ADMIN_PASSWORD: "ci-only-admin-password-2026!"
 
     steps:
       - uses: actions/checkout@v4
@@ -58,7 +60,7 @@ jobs:
       - name: Aplicar migraciones de Prisma
         run: npx prisma migrate deploy
 
-      - name: Sembrar datos de prueba
+      - name: Crear administrador inicial
         run: npm run db:seed
 
       - name: Compilar la aplicación

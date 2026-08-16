@@ -32,8 +32,7 @@ src/
 └── types/                tipos compartidos
 prisma/
 ├── schema.prisma
-├── seed.ts
-└── seed-data.ts
+└── seed.ts
 ```
 
 ## Requisitos previos
@@ -61,17 +60,17 @@ prisma/
    - `AUTH_SECRET`: genera uno con `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
    - `NEXT_PUBLIC_WHATSAPP_NUMBER`: número (con código de país, sin `+`) usado para el checkout por WhatsApp.
    - Variables de `CLOUDINARY_*`: necesarias para subir archivos de imagen desde el panel administrativo. Sin ellas, los campos de imagen siguen aceptando una URL directa, pero el botón "Subir" fallará.
+   - `SEED_ADMIN_EMAIL`: correo del administrador inicial. Si no se define, usa `amour@gmail.com`.
+   - `SEED_ADMIN_PASSWORD`: contraseña obligatoria para crear o actualizar el administrador inicial con `npm run db:seed`.
 
-3. Aplica las migraciones y siembra datos de ejemplo:
+3. Aplica las migraciones y crea el administrador inicial:
 
    ```bash
    npx prisma migrate dev
    npm run db:seed
    ```
 
-   Esto crea los roles, un usuario administrador (`admin@eclatmaquillaje.com` / `Admin#2026!`) y un catálogo de ejemplo.
-
-   > **Producción:** el seed rechaza correr sin la variable `SEED_ADMIN_PASSWORD` cuando `NODE_ENV=production` — nunca debe quedar en producción un Administrador con la contraseña de demo de este README.
+   Esto crea o actualiza los roles base y el usuario administrador inicial. No crea productos, categorías, marcas, promociones, banners, clientes, pedidos ni reseñas de prueba.
 
 ## Desarrollo
 
@@ -93,7 +92,7 @@ Abre [http://localhost:3000](http://localhost:3000).
 | `npm test` | Ejecuta la suite de pruebas (Vitest) una sola vez |
 | `npm run test:watch` | Ejecuta la suite de pruebas en modo watch |
 | `npm run db:migrate` | Aplica migraciones pendientes (`prisma migrate deploy`) |
-| `npm run db:seed` | Siembra datos de ejemplo |
+| `npm run db:seed` | Crea o actualiza roles base y el administrador inicial |
 
 ## Panel administrativo
 
